@@ -15,18 +15,23 @@
 #define SIGNALPROCESSOR_H_
 
 /* Internal Includes */
-#include "Thread.h"
 /* External Includes */
 /* System Includes */
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/signal_set.hpp>
 
-class SignalProcessor: private Utils::Thread {
+
+class SignalListener;
+
+class SignalProcessor {
 public:
 	/**
 	 * Constructor
 	 */
 	SignalProcessor();
+
+	/**
+	 * Destructor
+	 */
+	~SignalProcessor() throw();
 
 	/**
 	 * Starts the processor.
@@ -39,19 +44,13 @@ public:
 	void stop(void);
 private:
 	// Objects
-	boost::asio::io_service							mIoService;
-	boost::asio::signal_set							mSigSet;
+	SignalListener*									mSignalListener;
 
 	// Do not copy
 	SignalProcessor(const SignalProcessor&);
 	SignalProcessor &operator=(const SignalProcessor&);
 
 	// Internal
-	void schedule();
-	void loop();
-	void onStarted();
-	void onStop();
-	void onSignal(const boost::system::error_code&, int sigNumber);
 };
 
 #endif /* SIGNALPROCESSOR_H_ */
