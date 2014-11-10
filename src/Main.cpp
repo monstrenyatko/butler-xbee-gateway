@@ -25,10 +25,10 @@ int main() {
 	try {
 		Application::initialize();
 		Application::get().run();
+		Application::destroy();
 	} catch (std::exception& e) {
-		std::cerr << "Run-Time Error [" << e.what()<<"]" << std::endl;
+		std::cerr<<"main(), Error: "<<e.what()<<std::endl;
 	}
-	Application::destroy();
 	std::cout<<"EXIT"<<std::endl;
 	return 0;
 }

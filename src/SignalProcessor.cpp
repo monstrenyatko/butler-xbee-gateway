@@ -111,6 +111,7 @@ SignalProcessor::SignalProcessor()
 SignalProcessor::~SignalProcessor()
 throw()
 {
+	stop();
 	delete mSignalListener;
 }
 

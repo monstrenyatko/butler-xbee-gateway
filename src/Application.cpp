@@ -59,21 +59,36 @@ throw (Utils::Error)
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
 	}
 
+	// start all services
+	std::cout<<"START"<<std::endl;
+	try {
+		ptrProcessor->start();
+		ptrSignalProcessor->start();
+		ptrSerial->start();
+	} catch (std::exception& e) {
+		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
+	}
+
 	// no exceptions from this point
 	mProcessor = ptrProcessor.release();
 	mSignalProcessor = ptrSignalProcessor.release();
 	mSerial = ptrSerial.release();
-
-	// start all services
-	std::cout<<"START"<<std::endl;
-	mProcessor->start();
-	mSignalProcessor->start();
-	mSerial->start();
 }
 
 Application::~Application()
 throw ()
 {
+	// stop all services
+	std::cout<<"STOP"<<std::endl;
+	try {
+		mSerial->stop();
+		mSignalProcessor->stop();
+		mProcessor->stop();
+	} catch (std::exception& e) {
+		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
+	}
+
+	// clean objects
 	std::cout<<"DESTROY"<<std::endl;
 	try {
 		delete mSerial;
@@ -85,15 +100,10 @@ throw ()
 }
 
 void Application::run() throw () {
-	// wait request to finish
 	std::cout<<"PROCESSING"<<std::endl;
+	// wait request to finish
 	mSem.wait();
-	// stop all services
-	std::cout<<"STOP"<<std::endl;
-	mSerial->stop();
-	mSignalProcessor->stop();
-	mProcessor->stop();
-	std::cout<<"FINISH"<<std::endl;
+	std::cout<<"FINISHING"<<std::endl;
 }
 
 void Application::stop() throw () {

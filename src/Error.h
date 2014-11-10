@@ -33,14 +33,16 @@ namespace ErrorCode {
 
 class Error: public std::exception
 {
+private:
+	const char*				mSep = " -> ";
 public:
 	Error(const std::string& msg):mCode(ErrorCode::UNSPECIFIED), mWhat(msg) {}
 	Error(ErrorCode::Type code, const std::string& msg):mCode(code), mWhat(msg) {}
 	Error(const Error& e):mCode(e.mCode), mWhat(e.what()) {}
-	Error(const Error& e, const std::string& msg):mCode(e.mCode), mWhat(msg+" :: "+e.what()) {}
+	Error(const Error& e, const std::string& msg):mCode(e.mCode), mWhat(msg+mSep+e.what()) {}
 	Error(const std::exception& e):mCode(ErrorCode::UNSPECIFIED), mWhat(e.what()) {}
-	Error(const std::exception& e, const std::string& msg):mCode(ErrorCode::UNSPECIFIED), mWhat(msg+" :: "+e.what()) {}
-	Error(ErrorCode::Type code, const std::exception& e, const std::string& msg):mCode(code), mWhat(msg+" :: "+e.what()) {}
+	Error(const std::exception& e, const std::string& msg):mCode(ErrorCode::UNSPECIFIED), mWhat(msg+mSep+e.what()) {}
+	Error(ErrorCode::Type code, const std::exception& e, const std::string& msg):mCode(code), mWhat(msg+mSep+e.what()) {}
 	virtual ~Error() throw() {}
 	const char* what() const throw() {
 		return mWhat.c_str();

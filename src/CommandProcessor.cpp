@@ -29,6 +29,7 @@ CommandProcessor::CommandProcessor()
 }
 
 CommandProcessor::~CommandProcessor() throw () {
+	stop();
 	while (!mQueue.empty()) {
 		delete mQueue.front();
 		mQueue.pop();
@@ -48,8 +49,7 @@ void CommandProcessor::onStop() {
 	mSem.post();
 }
 
-void
-CommandProcessor::loop(void)
+void CommandProcessor::loop(void)
 {
 	while (isAlive()) {
 		// wait a new command
@@ -73,8 +73,7 @@ CommandProcessor::loop(void)
 	}
 }
 
-void
-CommandProcessor::process(std::unique_ptr<Command> command)
+void CommandProcessor::process(std::unique_ptr<Command> command)
 {
 	assert(command.get());
 	if (command.get()) {

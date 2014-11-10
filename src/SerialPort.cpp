@@ -151,6 +151,7 @@ throw ():
 SerialPort::~SerialPort()
 throw ()
 {
+	stop();
 	delete mCtx;
 }
 
