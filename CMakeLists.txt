@@ -53,6 +53,8 @@ set(SOURCE_FILES ${SOURCE_FILES} src/Semaphore.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/SerialPort.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/SignalProcessor.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/Thread.cpp)
+set(SOURCE_FILES ${SOURCE_FILES} src/XBeeFrame.cpp)
+set(SOURCE_FILES ${SOURCE_FILES} src/XBeeNet.cpp)
 
 #******************* Includes Global *************
 include_directories(${src})

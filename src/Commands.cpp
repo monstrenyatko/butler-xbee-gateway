@@ -16,9 +16,12 @@
 #include "Error.h"
 #include "Application.h"
 #include "CommandProcessor.h"
+#include "SerialPort.h"
+#include "XBeeNet.h"
 /* External Includes */
 /* System Includes */
 #include <iostream>
+#include <iomanip>
 
 
 void CommandApplicationStop::execute() {
@@ -26,13 +29,11 @@ void CommandApplicationStop::execute() {
 }
 
 void CommandSerialInput::execute() {
-	std::cout<<UTILS_STR_CLASS_FUNCTION(CommandSerialInput)<<", data.size:"<<mData->size()<<std::endl;
-	for (uint8_t i: *mData) {
-		std::cout << "[" << i << "]";
-	}
-	if (!mData->empty()) {
-		std::cout << std::endl;
-	}
+	Application::get().getXBeeNet().from(std::move(mData));
+}
+
+void CommandSerialOutput::execute() {
+	Application::get().getSerial().write(&((*mData)[0]), mData->size());
 }
 
 void CommandSerialClose::execute() {

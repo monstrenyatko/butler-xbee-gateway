@@ -39,6 +39,15 @@ private:
 	std::unique_ptr< std::vector<uint8_t> >		mData;
 };
 
+class CommandSerialOutput: public Utils::Command {
+public:
+	CommandSerialOutput(std::unique_ptr< std::vector<uint8_t> > data)
+	:mData(std::move(data)) {};
+	void execute();
+private:
+	std::unique_ptr< std::vector<uint8_t> >		mData;
+};
+
 class CommandSerialClose: public Utils::Command {
 public:
 	CommandSerialClose(const std::string& cause)

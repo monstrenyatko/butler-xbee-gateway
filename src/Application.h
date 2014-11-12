@@ -26,6 +26,7 @@ namespace Utils {
 }
 class SerialPort;
 class SignalProcessor;
+class XBeeNet;
 
 class Application {
 public:
@@ -62,6 +63,7 @@ public:
 	// Available services
 	Utils::CommandProcessor&	getProcessor() {return *mProcessor;}
 	SerialPort&					getSerial() {return *mSerial;}
+	XBeeNet&					getXBeeNet() {return *mXBeeNet;}
 private:
 	// Objects
 	static Application*				mInstance;
@@ -70,6 +72,7 @@ private:
 	Utils::CommandProcessor*		mProcessor;
 	SignalProcessor*				mSignalProcessor;
 	SerialPort*						mSerial;
+	XBeeNet*						mXBeeNet;
 
 	// Do not copy
 	Application(const Application&);
