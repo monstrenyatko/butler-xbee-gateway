@@ -27,14 +27,14 @@
 
 #define SERIAL_PORT_READER_BUFFER_SIZE 512
 
+
 ///////////////////// SerialPortReader /////////////////////
 class SerialPortReader : private Utils::Thread {
 public:
 	SerialPortReader(boost::asio::serial_port& port)
 	throw ():
 			mPort(port)
-	{
-	}
+	{}
 
 	void onStarted() {
 		schedule();
@@ -128,13 +128,63 @@ private:
 	}
 };
 
+///////////////////// SerialPortWriter /////////////////////
+class SerialPortWriter {
+public:
+	SerialPortWriter(boost::asio::serial_port& port)
+	throw ():
+		mPort(port)
+	{}
+
+	void write(std::unique_ptr< std::vector<uint8_t> > data) {
+		try {
+			try {
+				boost::asio::write(mPort, boost::asio::buffer(&((*data)[0]), data->size()));
+				// TODO: process write`s return value
+			} catch (boost::system::system_error& e) {
+				throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(SerialPortWriter));
+			}
+		} catch (std::exception& e) {
+			std::cerr<<"write, error: "<<e.what()<<std::endl;
+		}
+	}
+private:
+	// Objects
+	boost::asio::serial_port&		mPort;
+};
+
 ///////////////////// SerialPortContext /////////////////////
 struct SerialPortContext {
+	Utils::CommandProcessor							processor;
 	boost::asio::io_service							ioService;
 	std::unique_ptr<boost::asio::serial_port>		port;
 	std::string										portName;
 	uint32_t										portBaud;
 	std::unique_ptr<SerialPortReader>				portReader;
+	std::unique_ptr<SerialPortWriter>				portWriter;
+};
+
+///////////////////// SerialPortCommands /////////////////////
+class SerialPortCommand: public Utils::Command {
+public:
+	SerialPortCommand(SerialPortContext& ctx): mCtx(ctx) {}
+protected:
+	SerialPortContext&		mCtx;
+};
+
+class SerialPortCommandWrite: public SerialPortCommand {
+public:
+	SerialPortCommandWrite(SerialPortContext& ctx, std::unique_ptr< std::vector<uint8_t> > data)
+	:
+		SerialPortCommand(ctx),
+		mData(std::move(data))
+	{}
+
+	void execute() {
+		mCtx.portWriter->write(std::move(mData));
+	}
+private:
+	std::unique_ptr< std::vector<uint8_t> >		mData;
 };
 
 ///////////////////// SerialPort /////////////////////
@@ -146,6 +196,7 @@ throw ():
 	mCtx->portName = name;
 	mCtx->portBaud = baud;
 	mCtx->portReader.reset(new SerialPortReader(*mCtx->port));
+	mCtx->portWriter.reset(new SerialPortWriter(*mCtx->port));
 }
 
 SerialPort::~SerialPort()
@@ -169,6 +220,8 @@ throw (Utils::Error)
 			mCtx->port->set_option(boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none));
 			// Start reading
 			mCtx->portReader->start();
+			// Start processor
+			mCtx->processor.start();
 		} catch (boost::system::system_error e) {
 			throw Utils::Error(e);
 		}
@@ -180,15 +233,13 @@ throw (Utils::Error)
 void SerialPort::stop()
 throw ()
 {
+	mCtx->processor.stop();
 	mCtx->portReader->stop();
 }
 
-std::size_t SerialPort::write(const uint8_t* data, uint32_t size)
-throw (Utils::Error)
+void SerialPort::write(std::unique_ptr< std::vector<uint8_t> > buffer)
+throw ()
 {
-	try {
-		return boost::asio::write(*mCtx->port, boost::asio::buffer(data, size));
-	} catch (boost::system::system_error& e) {
-		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(SerialPort));
-	}
+	std::unique_ptr<Utils::Command> cmd (new SerialPortCommandWrite(*mCtx, std::move(buffer)));
+	mCtx->processor.process(std::move(cmd));
 }

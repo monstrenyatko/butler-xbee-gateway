@@ -28,11 +28,32 @@ struct SerialPortContext;
 
 class SerialPort {
 public:
+	/**
+	 * Constructor
+	 */
 	SerialPort(const std::string& name, uint32_t baud) throw ();
+
+	/**
+	 * Destructor
+	 */
 	virtual ~SerialPort() throw ();
+
+	/**
+	 * Starts the processing
+	 */
 	void start() throw (Utils::Error);
+
+	/**
+	 * Stops the processing
+	 */
 	void stop() throw ();
-	std::size_t write(const uint8_t* data, uint32_t size) throw (Utils::Error);
+
+	/**
+	 * Writes data to serial
+	 *
+	 * @param buffer data to be written
+	 */
+	void  write(std::unique_ptr< std::vector<uint8_t> > buffer) throw ();
 private:
 	// Objects
 	SerialPortContext*				mCtx;

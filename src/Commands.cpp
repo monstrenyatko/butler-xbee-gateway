@@ -33,7 +33,7 @@ void CommandSerialInput::execute() {
 }
 
 void CommandSerialOutput::execute() {
-	Application::get().getSerial().write(&((*mData)[0]), mData->size());
+	Application::get().getSerial().write(std::move(mData));
 }
 
 void CommandSerialClose::execute() {
