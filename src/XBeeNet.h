@@ -21,7 +21,8 @@
 #include <vector>
 #include <memory>
 
-class XBeeNetFromBuffer;
+/* Forward declaration */
+struct XBeeNetContext;
 
 /**
  * XBee (ZigBee) network
@@ -64,9 +65,15 @@ public:
 	void to(uint64_t address, std::unique_ptr< std::vector<uint8_t> > buffer) throw ();
 private:
 	// Objects
-	XBeeNetFromBuffer*			mFromBuffer;
+	XBeeNetContext*				mCtx;
+
+	// Do not copy
+	XBeeNet(const XBeeNet&);
+	XBeeNet &operator=(const XBeeNet&);
 
 	// Methods
+	void onFrom(std::unique_ptr< std::vector<uint8_t> > buffer);
+	void onTo(uint64_t address, std::unique_ptr< std::vector<uint8_t> > buffer);
 	void onFrame(std::unique_ptr<std::vector<uint8_t> >);
 };
 

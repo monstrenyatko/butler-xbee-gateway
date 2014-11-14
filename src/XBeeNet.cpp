@@ -169,27 +169,101 @@ public:
 	}
 };
 
+///////////////////// XBeeNetContext /////////////////////
+struct XBeeNetContext {
+	Utils::CommandProcessor							processor;
+	std::unique_ptr<XBeeNetFromBuffer>				fromBuffer;
+};
+
+///////////////////// XBeeNetCommands /////////////////////
+class XBeeNetCommand: public Utils::Command {
+};
+
+class XBeeNetCommandFrom: public XBeeNetCommand {
+public:
+	typedef std::function<void(std::unique_ptr<XBeeBuffer>)> Cbk;
+	XBeeNetCommandFrom(Cbk cbk, std::unique_ptr<XBeeBuffer> data)
+	:
+		mCbk(cbk),
+		mData(std::move(data))
+	{}
+
+	void execute() {
+		mCbk(std::move(mData));
+	}
+private:
+	Cbk								mCbk;
+	std::unique_ptr<XBeeBuffer>		mData;
+};
+
+class XBeeNetCommandTo: public XBeeNetCommand {
+public:
+	typedef std::function<void(uint64_t, std::unique_ptr<XBeeBuffer>)> Cbk;
+	XBeeNetCommandTo(Cbk cbk, uint64_t address, std::unique_ptr<XBeeBuffer> data)
+	:
+		mCbk(cbk),
+		mAddress(address),
+		mData(std::move(data))
+	{}
+
+	void execute() {
+		mCbk(mAddress, std::move(mData));
+	}
+private:
+	Cbk								mCbk;
+	uint64_t						mAddress;
+	std::unique_ptr<XBeeBuffer>		mData;
+};
+
 ///////////////////// XBeeNet /////////////////////
 XBeeNet::XBeeNet()
 :
-		mFromBuffer(NULL)
+	mCtx(new XBeeNetContext)
 {
-	mFromBuffer = new XBeeNetFromBuffer( [this] (std::unique_ptr<XBeeBuffer> a) {
+	mCtx->fromBuffer.reset(new XBeeNetFromBuffer( [this] (std::unique_ptr<XBeeBuffer> a) {
 		onFrame(std::move(a));
-	});
+	}));
 }
 
 XBeeNet::~XBeeNet() {
-	delete mFromBuffer;
+	delete mCtx;
 }
 
 void XBeeNet::start() {
+	mCtx->processor.start();
 }
 
 void XBeeNet::stop() {
+	mCtx->processor.stop();
 }
 
-void XBeeNet::from(std::unique_ptr<std::vector<uint8_t> > buffer) throw () {
+void XBeeNet::from(std::unique_ptr<XBeeBuffer> buffer)
+throw ()
+{
+	std::unique_ptr<Utils::Command> cmd (new XBeeNetCommandFrom(
+		[this] (std::unique_ptr<XBeeBuffer> a) {
+				onFrom(std::move(a));
+		},
+		std::move(buffer)
+	));
+	mCtx->processor.process(std::move(cmd));
+}
+
+void XBeeNet::to(uint64_t address, std::unique_ptr< std::vector<uint8_t> > buffer)
+throw ()
+{
+	std::unique_ptr<Utils::Command> cmd (new XBeeNetCommandTo(
+		[this] (uint64_t a, std::unique_ptr<XBeeBuffer> b) {
+				onTo(a, std::move(b));
+		},
+		address,
+		std::move(buffer)
+	));
+	mCtx->processor.process(std::move(cmd));
+}
+
+///////////////////// XBeeNet::Internal /////////////////////
+void XBeeNet::onFrom(std::unique_ptr< std::vector<uint8_t> > buffer) {
 	std::ios::fmtflags f(std::cout.flags() );
 	std::cout<<UTILS_STR_CLASS_FUNCTION(XBeeNet)<<", data.size:"<<buffer->size()<<std::endl;
 	for (uint8_t i: *buffer) {
@@ -199,42 +273,10 @@ void XBeeNet::from(std::unique_ptr<std::vector<uint8_t> > buffer) throw () {
 		std::cout << std::endl;
 	}
 	std::cout.flags(f);
-	mFromBuffer->push(*buffer);
+	mCtx->fromBuffer->push(*buffer);
 }
 
-void XBeeNet::onFrame(std::unique_ptr<XBeeBuffer> buffer) {
-	{
-		std::ios::fmtflags f(std::cout.flags() );
-		std::cout<<"New Frame, size:"<<buffer->size()<<std::endl;
-		std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
-		for (uint8_t i: *buffer) {
-			std::cout<<(int)i<<" ";
-		}
-		if (!buffer->empty()) {
-			std::cout << std::endl;
-		}
-		std::cout.flags(f);
-	}
-	try {
-		XBeeFrame frame(*buffer);
-		{
-			std::ios::fmtflags f(std::cout.flags() );
-			std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
-			std::cout<<"Data, size: "<<frame.getData()->getValue().size()<<std::endl;
-			for (uint8_t i: frame.getData()->getValue()) {
-				std::cout<<(int)i<<" ";
-			}
-			std::cout<<std::endl;
-			std::cout.flags(f);
-		}
-	} catch (Utils::Error& e) {
-		std::cerr<<"Frame parser, error: "<<e.what()<<std::endl;
-	}
-}
-
-void XBeeNet::to(uint64_t address, std::unique_ptr< std::vector<uint8_t> > buffer)
-throw ()
-{
+void XBeeNet::onTo(uint64_t address, std::unique_ptr<XBeeBuffer> buffer) {
 	try {
 		XBeeFrame newframe(std::unique_ptr<XBeeFrameApiId>(new XBeeFrameApiId(XBeeFrameApiId::ZB_TX_REQ)));
 		newframe.setId(std::unique_ptr<XBeeFrameId>(new XBeeFrameId(XBeeFrameId::NO_RSP)));
@@ -281,5 +323,35 @@ throw ()
 		Application::get().getProcessor().process(std::move(cmd));
 	} catch (Utils::Error& e) {
 		std::cerr<<"Frame encoder, error: "<<e.what()<<std::endl;
+	}
+}
+
+void XBeeNet::onFrame(std::unique_ptr<XBeeBuffer> buffer) {
+	{
+		std::ios::fmtflags f(std::cout.flags() );
+		std::cout<<"New Frame, size:"<<buffer->size()<<std::endl;
+		std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
+		for (uint8_t i: *buffer) {
+			std::cout<<(int)i<<" ";
+		}
+		if (!buffer->empty()) {
+			std::cout << std::endl;
+		}
+		std::cout.flags(f);
+	}
+	try {
+		XBeeFrame frame(*buffer);
+		{
+			std::ios::fmtflags f(std::cout.flags() );
+			std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
+			std::cout<<"Data, size: "<<frame.getData()->getValue().size()<<std::endl;
+			for (uint8_t i: frame.getData()->getValue()) {
+				std::cout<<(int)i<<" ";
+			}
+			std::cout<<std::endl;
+			std::cout.flags(f);
+		}
+	} catch (Utils::Error& e) {
+		std::cerr<<"Frame parser, error: "<<e.what()<<std::endl;
 	}
 }
