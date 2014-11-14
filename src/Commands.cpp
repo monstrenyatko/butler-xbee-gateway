@@ -28,14 +28,6 @@ void CommandApplicationStop::execute() {
 	Application::get().stop();
 }
 
-void CommandSerialInput::execute() {
-	Application::get().getXBeeNet().from(std::move(mData));
-}
-
-void CommandSerialOutput::execute() {
-	Application::get().getSerial().write(std::move(mData));
-}
-
 void CommandSerialClose::execute() {
 	std::cerr<<UTILS_STR_CLASS_FUNCTION(CommandSerialClose)<<", cause:"<<mData<<std::endl;
 	// stop

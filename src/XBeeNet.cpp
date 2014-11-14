@@ -15,9 +15,10 @@
 #include "XBeeNet.h"
 #include "XBeeFrame.h"
 #include "Error.h"
-#include "Commands.h"
 #include "Application.h"
 #include "CommandProcessor.h"
+#include "Router.h"
+#include "NetworkingDataUnit.h"
 /* External Includes */
 /* System Includes */
 #include <iostream>
@@ -177,6 +178,8 @@ struct XBeeNetContext {
 
 ///////////////////// XBeeNetCommands /////////////////////
 class XBeeNetCommand: public Utils::Command {
+public:
+	virtual ~XBeeNetCommand() {}
 };
 
 class XBeeNetCommandFrom: public XBeeNetCommand {
@@ -319,8 +322,13 @@ void XBeeNet::onTo(uint64_t address, std::unique_ptr<XBeeBuffer> buffer) {
 			}
 			std::cout.flags(f);
 		}
-		std::unique_ptr<Utils::Command> cmd (new CommandSerialOutput(std::move(buffer)));
-		Application::get().getProcessor().process(std::move(cmd));
+		std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitXBeeEncoder(
+				std::move(buffer),
+				std::unique_ptr<Networking::Address>
+					(new Networking::AddressXBeeNet(address)),
+				std::unique_ptr<Networking::Address>()
+		));
+		Application::get().getRouter().process(std::move(unit));
 	} catch (Utils::Error& e) {
 		std::cerr<<"Frame encoder, error: "<<e.what()<<std::endl;
 	}
@@ -350,6 +358,16 @@ void XBeeNet::onFrame(std::unique_ptr<XBeeBuffer> buffer) {
 			}
 			std::cout<<std::endl;
 			std::cout.flags(f);
+		}
+		{
+			std::unique_ptr<XBeeBuffer> data(new XBeeBuffer(frame.getData()->getValue()));
+			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitXBeeNet(
+					std::move(data),
+					std::unique_ptr<Networking::Address>
+						(new Networking::AddressXBeeNet(frame.getAddr64Src()->getValue())),
+					std::unique_ptr<Networking::Address>()
+			));
+			Application::get().getRouter().process(std::move(unit));
 		}
 	} catch (Utils::Error& e) {
 		std::cerr<<"Frame parser, error: "<<e.what()<<std::endl;

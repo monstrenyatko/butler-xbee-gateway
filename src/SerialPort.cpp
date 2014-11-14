@@ -18,6 +18,8 @@
 #include "Commands.h"
 #include "Error.h"
 #include "Application.h"
+#include "Router.h"
+#include "NetworkingDataUnit.h"
 /* External Includes */
 /* System Includes */
 #include <iostream>
@@ -73,8 +75,13 @@ private:
 		if (qty) {
 			std::unique_ptr< std::vector<uint8_t> > data
 						(new std::vector<uint8_t>(mBufferRead,mBufferRead+qty));
-			std::unique_ptr<Utils::Command> cmd (new CommandSerialInput(std::move(data)));
-			Application::get().getProcessor().process(std::move(cmd));
+			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitSerial(
+					std::move(data),
+					std::unique_ptr<Networking::Address>
+						(new Networking::AddressSerial("/dev/tty.stub")),
+					std::unique_ptr<Networking::Address>()
+			));
+			Application::get().getRouter().process(std::move(unit));
 		}
 		try {
 			if (!qty && error) {
@@ -168,6 +175,7 @@ struct SerialPortContext {
 class SerialPortCommand: public Utils::Command {
 public:
 	SerialPortCommand(SerialPortContext& ctx): mCtx(ctx) {}
+	virtual ~SerialPortCommand() {}
 protected:
 	SerialPortContext&		mCtx;
 };

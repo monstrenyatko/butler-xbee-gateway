@@ -1,7 +1,7 @@
 /*
  *******************************************************************************
  *
- * Purpose: Asynchronous commands implementation.
+ * Purpose: Networking. The common definitions
  *
  *******************************************************************************
  * Copyright Monstrenyatko 2014.
@@ -11,32 +11,32 @@
  *******************************************************************************
  */
 
-#ifndef COMMANDS_H_
-#define COMMANDS_H_
+#ifndef NETWORKING_DEFS_H_
+#define NETWORKING_DEFS_H_
 
 /* Internal Includes */
-#include "Command.h"
 /* External Includes */
 /* System Includes */
-#include <memory>
 #include <vector>
-#include <string>
+#include <stdint.h>
 
+namespace Networking {
 
-class CommandApplicationStop: public Utils::Command {
-public:
-	CommandApplicationStop() {}
-	void execute();
-private:
-};
+typedef std::vector<uint8_t> Buffer;
 
-class CommandSerialClose: public Utils::Command {
-public:
-	CommandSerialClose(const std::string& cause)
-	:mData(cause) {};
-	void execute();
-private:
-	std::string		mData;
-};
+namespace Origin {
+	enum Type {
+		// from serial
+		SERIAL,
+		// from XBee network
+		XBEE_NET,
+		// from XBee encoder for sending to XBee network
+		XBEE_ENCODER,
+		// from TCP network
+		TCP
+	};
+}
 
-#endif /* COMMANDS_H_ */
+} /* namespace Networking */
+
+#endif /* NETWORKING_DEFS_H_ */
