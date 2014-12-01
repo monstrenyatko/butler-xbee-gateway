@@ -1,7 +1,7 @@
 /*
  *******************************************************************************
  *
- * Purpose: Networking. The common definitions
+ * Purpose: Utils. Unique ID type.
  *
  *******************************************************************************
  * Copyright Monstrenyatko 2014.
@@ -11,32 +11,18 @@
  *******************************************************************************
  */
 
-#ifndef NETWORKING_DEFS_H_
-#define NETWORKING_DEFS_H_
+#ifndef UTILS_ID_H_
+#define UTILS_ID_H_
 
 /* Internal Includes */
 /* External Includes */
 /* System Includes */
-#include <vector>
 #include <stdint.h>
 
-namespace Networking {
+namespace Utils {
 
-typedef std::vector<uint8_t> Buffer;
+typedef uint32_t Id;
 
-namespace Origin {
-	enum Type {
-		// from serial
-		SERIAL,
-		// from XBee network
-		XBEE,
-		// from XBee encoder for sending to XBee network
-		XBEE_ENCODER,
-		// from TCP network
-		TCP
-	};
-}
+} /* namespace Utils */
 
-} /* namespace Networking */
-
-#endif /* NETWORKING_DEFS_H_ */
+#endif /* UTILS_ID_H_ */

@@ -1,7 +1,7 @@
 /*
  *******************************************************************************
  *
- * Purpose: Networking. The common definitions
+ * Purpose: Utils. Unique ID generator.
  *
  *******************************************************************************
  * Copyright Monstrenyatko 2014.
@@ -11,32 +11,38 @@
  *******************************************************************************
  */
 
-#ifndef NETWORKING_DEFS_H_
-#define NETWORKING_DEFS_H_
+#ifndef UTILS_ID_GEN_H_
+#define UTILS_ID_GEN_H_
 
 /* Internal Includes */
+#include "Id.h"
+#include "Atomic.h"
 /* External Includes */
 /* System Includes */
-#include <vector>
-#include <stdint.h>
 
-namespace Networking {
 
-typedef std::vector<uint8_t> Buffer;
+namespace Utils {
 
-namespace Origin {
-	enum Type {
-		// from serial
-		SERIAL,
-		// from XBee network
-		XBEE,
-		// from XBee encoder for sending to XBee network
-		XBEE_ENCODER,
-		// from TCP network
-		TCP
-	};
-}
+/**
+ * Thread-Safe Unique ID Generator.
+ */
+class IdGen {
+public:
+	/**
+	 * Constructor
+	 */
+	IdGen(): mId(0) {}
 
-} /* namespace Networking */
+	/**
+	 * Generates next unique ID value.
+	 *
+	 * @return unique ID
+	 */
+	Id get() { return mId++;}
+private:
+	atomic_uint32_t mId;
+};
 
-#endif /* NETWORKING_DEFS_H_ */
+} /* namespace Utils */
+
+#endif /* UTILS_ID_GEN_H_ */

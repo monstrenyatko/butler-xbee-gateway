@@ -27,7 +27,9 @@ class Address {
 public:
 	virtual ~Address() {}
 
-	Origin::Type getOrigin() {return mOrigin;}
+	Origin::Type getOrigin() const {return mOrigin;}
+	virtual bool isEqual(const Address& v) const {return mOrigin==v.mOrigin;}
+	virtual std::unique_ptr<Address> clone() const = 0;
 protected:
 	Address(Origin::Type o): mOrigin(o) {}
 private:
@@ -39,13 +41,34 @@ public:
 	virtual ~AddressImpl() {}
 	AddressImpl(const tVal& v): Address(tOrigin), mVal(v) {}
 
-	tVal& get() {return mVal;}
+	const tVal& get() const {return mVal;}
+	virtual std::unique_ptr<Address> clone() const
+			{return std::unique_ptr<Address>(new AddressImpl(*this));}
+	virtual bool isEqual(const Address& v) const {
+		bool res = false;
+		const AddressImpl* addr = dynamic_cast<const AddressImpl*>(&v);
+		if (addr) { res = (Address::isEqual(v) && mVal==addr->mVal); }
+		return res;
+	}
 private:
 	tVal				mVal;
 };
 
-typedef AddressImpl<Origin::SERIAL, std::string>			AddressSerial;
-typedef AddressImpl<Origin::XBEE_NET, uint64_t>				AddressXBeeNet;
+typedef std::string												AddressSerialValT;
+typedef uint64_t												AddressXbeeValT;
+typedef struct AddressTcpValT_ {
+	AddressTcpValT_(const std::string& h, uint32_t p):host(h), port(p) {}
+	bool operator==(const AddressTcpValT_& v) const {
+		return host==v.host && port==v.port;
+	}
+	std::string		host;
+	uint32_t		port;
+} AddressTcpValT;
+
+typedef AddressImpl<Origin::SERIAL, AddressSerialValT>			AddressSerial;
+typedef AddressImpl<Origin::XBEE, AddressXbeeValT>				AddressXBeeNet;
+typedef AddressImpl<Origin::TCP, AddressTcpValT>				AddressTcp;
+
 
 } /* namespace Networking */
 

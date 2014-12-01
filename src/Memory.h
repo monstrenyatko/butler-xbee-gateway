@@ -1,7 +1,7 @@
 /*
  *******************************************************************************
  *
- * Purpose: Networking. The common definitions
+ * Purpose: Utils. Memory tools.
  *
  *******************************************************************************
  * Copyright Monstrenyatko 2014.
@@ -11,32 +11,29 @@
  *******************************************************************************
  */
 
-#ifndef NETWORKING_DEFS_H_
-#define NETWORKING_DEFS_H_
+#ifndef UTILS_MEMORY_H_
+#define UTILS_MEMORY_H_
 
 /* Internal Includes */
 /* External Includes */
 /* System Includes */
-#include <vector>
-#include <stdint.h>
+#include <memory>
 
-namespace Networking {
+namespace Utils {
 
-typedef std::vector<uint8_t> Buffer;
-
-namespace Origin {
-	enum Type {
-		// from serial
-		SERIAL,
-		// from XBee network
-		XBEE,
-		// from XBee encoder for sending to XBee network
-		XBEE_ENCODER,
-		// from TCP network
-		TCP
-	};
+template<typename DerivedT, typename BaseT>
+std::unique_ptr<DerivedT>
+dynamic_unique_ptr_cast(std::unique_ptr<BaseT>& v)
+{
+	std::unique_ptr<DerivedT> res;
+	DerivedT* p = dynamic_cast<DerivedT*>(v.get());
+	if (p) {
+		res = std::unique_ptr<DerivedT>(p);
+		v.release();
+	}
+	return res;
 }
 
-} /* namespace Networking */
+} /* namespace Utils */
 
-#endif /* NETWORKING_DEFS_H_ */
+#endif /* UTILS_MEMORY_H_ */

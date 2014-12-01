@@ -30,9 +30,9 @@ class DataUnit {
 public:
 	virtual ~DataUnit() {}
 
-	Origin::Type getOrigin() {return mOrigin;}
-	Address* getFrom() {return mFrom.get();}
-	Address* getTo() {return mTo.get();}
+	Origin::Type getOrigin() const {return mOrigin;}
+	const Address* getFrom() const {return mFrom.get();}
+	const Address* getTo() const {return mTo.get();}
 protected:
 	DataUnit(Origin::Type o, std::unique_ptr<Address> from, std::unique_ptr<Address> to)
 	: mOrigin(o), mFrom(std::move(from)), mTo(std::move(to)) {}
@@ -59,7 +59,8 @@ private:
 
 typedef DataUnitImpl<Origin::SERIAL>				DataUnitSerial;
 typedef DataUnitImpl<Origin::XBEE_ENCODER>			DataUnitXBeeEncoder;
-typedef DataUnitImpl<Origin::XBEE_NET>				DataUnitXBeeNet;
+typedef DataUnitImpl<Origin::XBEE>					DataUnitXBee;
+typedef DataUnitImpl<Origin::TCP>					DataUnitTcp;
 
 } /* namespace Networking */
 

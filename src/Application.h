@@ -27,6 +27,7 @@ namespace Utils {
 class SerialPort;
 class SignalProcessor;
 class XBeeNet;
+class TcpNet;
 class Router;
 
 class Application {
@@ -65,6 +66,7 @@ public:
 	Utils::CommandProcessor&	getProcessor() {return *mProcessor;}
 	SerialPort&					getSerial() {return *mSerial;}
 	XBeeNet&					getXBeeNet() {return *mXBeeNet;}
+	TcpNet&						getTcpNet() {return *mTcpNet;}
 	Router&						getRouter() {return *mRouter;}
 private:
 	// Objects
@@ -75,6 +77,7 @@ private:
 	SignalProcessor*				mSignalProcessor;
 	SerialPort*						mSerial;
 	XBeeNet*						mXBeeNet;
+	TcpNet*							mTcpNet;
 	Router*							mRouter;
 
 	// Do not copy

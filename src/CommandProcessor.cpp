@@ -65,7 +65,7 @@ void CommandProcessor::loop(void)
 				cmd->execute();
 			} catch (std::exception &e) {
 				std::cerr<<UTILS_STR_CLASS_FUNCTION(CommandProcessor)
-						<<", Command::execute, error" << e.what() << std::endl;
+						<<", Command::execute, error: " << e.what() << std::endl;
 			}
 			mMtx.lock();
 		}

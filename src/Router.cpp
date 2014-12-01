@@ -18,6 +18,7 @@
 #include "Error.h"
 #include "Application.h"
 #include "XBeeNet.h"
+#include "TcpNet.h"
 #include "SerialPort.h"
 /* External Includes */
 /* System Includes */
@@ -102,11 +103,25 @@ void Router::onProcess(std::unique_ptr<Networking::DataUnit> unit) {
 					Application::get().getSerial().write(u->popData());
 				}
 					break;
-				case Networking::Origin::XBEE_NET:
+				case Networking::Origin::XBEE:
 				{
-
+					Networking::DataUnitXBee* u = dynamic_cast<Networking::DataUnitXBee*>(unit.get());
+					if (!u) {
+						throw Utils::Error("Wrong unit type");
+					}
+					Networking::AddressTcp to({"test.mosquitto.org",1883});
+					Application::get().getTcpNet().send(u->getFrom(), &to, u->popData());
 				}
+					break;
 				case Networking::Origin::TCP:
+				{
+					Networking::DataUnitTcp* u = dynamic_cast<Networking::DataUnitTcp*>(unit.get());
+					if (!u) {
+						throw Utils::Error("Wrong unit type");
+					}
+					Application::get().getXBeeNet().to(u->getFrom(), u->getTo(), u->popData());
+				}
+					break;
 				default:
 					throw Utils::Error("Origin is not implemented");
 			}

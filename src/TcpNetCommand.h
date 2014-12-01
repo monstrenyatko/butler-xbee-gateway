@@ -1,7 +1,7 @@
 /*
  *******************************************************************************
  *
- * Purpose: Networking. The common definitions
+ * Purpose: TCP network. Asynchronous commands.
  *
  *******************************************************************************
  * Copyright Monstrenyatko 2014.
@@ -11,32 +11,24 @@
  *******************************************************************************
  */
 
-#ifndef NETWORKING_DEFS_H_
-#define NETWORKING_DEFS_H_
+#ifndef TCP_NET_COMMAND_H_
+#define TCP_NET_COMMAND_H_
 
 /* Internal Includes */
+#include "TcpNet.h"
 /* External Includes */
+#include "Command.h"
 /* System Includes */
-#include <vector>
-#include <stdint.h>
 
-namespace Networking {
 
-typedef std::vector<uint8_t> Buffer;
+class TcpNetCommand: public Utils::Command {
+public:
+	TcpNetCommand(TcpNet& owner): mOwner(owner) {}
+	virtual ~TcpNetCommand() {}
+protected:
+	TcpNetDb& getDb() const {return mOwner.getDb();}
+private:
+	TcpNet&		mOwner;
+};
 
-namespace Origin {
-	enum Type {
-		// from serial
-		SERIAL,
-		// from XBee network
-		XBEE,
-		// from XBee encoder for sending to XBee network
-		XBEE_ENCODER,
-		// from TCP network
-		TCP
-	};
-}
-
-} /* namespace Networking */
-
-#endif /* NETWORKING_DEFS_H_ */
+#endif /* TCP_NET_COMMAND_H_ */

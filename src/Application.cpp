@@ -17,6 +17,7 @@
 #include "SignalProcessor.h"
 #include "SerialPort.h"
 #include "XBeeNet.h"
+#include "TcpNet.h"
 #include "Router.h"
 /* External Includes */
 /* System Includes */
@@ -48,12 +49,14 @@ throw (Utils::Error)
 	mSignalProcessor(NULL),
 	mSerial(NULL),
 	mXBeeNet(NULL),
+	mTcpNet(NULL),
 	mRouter(NULL)
 {
 	std::unique_ptr<Utils::CommandProcessor> ptrProcessor;
 	std::unique_ptr<SignalProcessor> ptrSignalProcessor;
 	std::unique_ptr<SerialPort> ptrSerial;
 	std::unique_ptr<XBeeNet> ptrXBeeNet;
+	std::unique_ptr<TcpNet> ptrTcpNet;
 	std::unique_ptr<Router> ptrRouter;
 
 	// initialize objects in exception-save mode
@@ -63,6 +66,7 @@ throw (Utils::Error)
 		ptrSignalProcessor.reset(new SignalProcessor);
 		ptrSerial.reset(new SerialPort("/dev/tty.usbserial-AH031GNH", 57600));
 		ptrXBeeNet.reset(new XBeeNet());
+		ptrTcpNet.reset(new TcpNet());
 		ptrRouter.reset(new Router);
 	} catch (std::exception& e) {
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
@@ -75,6 +79,7 @@ throw (Utils::Error)
 		ptrSignalProcessor->start();
 		ptrSerial->start();
 		ptrXBeeNet->start();
+		ptrTcpNet->start();
 		ptrRouter->start();
 	} catch (std::exception& e) {
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
@@ -85,6 +90,7 @@ throw (Utils::Error)
 	mSignalProcessor = ptrSignalProcessor.release();
 	mSerial = ptrSerial.release();
 	mXBeeNet = ptrXBeeNet.release();
+	mTcpNet = ptrTcpNet.release();
 	mRouter = ptrRouter.release();
 }
 
@@ -95,6 +101,7 @@ throw ()
 	std::cout<<"STOP"<<std::endl;
 	try {
 		mRouter->stop();
+		mTcpNet->stop();
 		mXBeeNet->stop();
 		mSerial->stop();
 		mSignalProcessor->stop();
@@ -107,6 +114,7 @@ throw ()
 	std::cout<<"DESTROY"<<std::endl;
 	try {
 		delete mRouter;
+		delete mTcpNet;
 		delete mXBeeNet;
 		delete mSerial;
 		delete mSignalProcessor;

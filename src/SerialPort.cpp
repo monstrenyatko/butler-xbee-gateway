@@ -43,14 +43,10 @@ public:
 	}
 
 	void onStop() {
-		try {
-			mPort.cancel();
-			mPort.close();
-			mPort.get_io_service().stop();
-			mPort.get_io_service().reset();
-		} catch (boost::system::system_error& e) {
-			// ignore
-		}
+		boost::system::error_code ec;
+		mPort.cancel(ec);
+		mPort.close(ec);
+		mPort.get_io_service().stop();
 	}
 
 	void start()
@@ -127,7 +123,7 @@ private:
 		while (isAlive()) {
 			try {
 				mPort.get_io_service().reset();
-				mPort.get_io_service().run_one();
+				mPort.get_io_service().run();
 			} catch (boost::system::system_error& e) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
@@ -144,9 +140,11 @@ public:
 	{}
 
 	void write(std::unique_ptr< std::vector<uint8_t> > data) {
+		std::cout<<UTILS_STR_CLASS_FUNCTION(SerialPortWriter)<<", size: "<<data->size()<<std::endl;
 		try {
 			try {
-				boost::asio::write(mPort, boost::asio::buffer(&((*data)[0]), data->size()));
+				std::size_t qty = boost::asio::write(mPort, boost::asio::buffer(&((*data)[0]), data->size()));
+				std::cout<<UTILS_STR_CLASS_FUNCTION(SerialPortWriter)<<", written : "<<qty<<std::endl;
 				// TODO: process write`s return value
 			} catch (boost::system::system_error& e) {
 				throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(SerialPortWriter));

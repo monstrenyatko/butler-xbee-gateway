@@ -14,13 +14,15 @@
 /* Internal Includes */
 #include "XBeeNet.h"
 #include "XBeeFrame.h"
+/* External Includes */
 #include "Error.h"
 #include "Application.h"
 #include "CommandProcessor.h"
 #include "Router.h"
 #include "NetworkingDataUnit.h"
-/* External Includes */
+#include "Memory.h"
 /* System Includes */
+#include <assert.h>
 #include <iostream>
 #include <iomanip>
 
@@ -201,21 +203,27 @@ private:
 
 class XBeeNetCommandTo: public XBeeNetCommand {
 public:
-	typedef std::function<void(uint64_t, std::unique_ptr<XBeeBuffer>)> Cbk;
-	XBeeNetCommandTo(Cbk cbk, uint64_t address, std::unique_ptr<XBeeBuffer> data)
+	typedef std::function<void(std::unique_ptr<Networking::Address>,
+				std::unique_ptr<Networking::Address>,
+				std::unique_ptr<Networking::Buffer>)> Cbk;
+	XBeeNetCommandTo(Cbk cbk,
+			const Networking::Address* from, const Networking::Address* to,
+			std::unique_ptr<Networking::Buffer> buffer)
 	:
 		mCbk(cbk),
-		mAddress(address),
-		mData(std::move(data))
+		mFrom(std::move(from->clone())),
+		mTo(std::move(to->clone())),
+		mData(std::move(buffer))
 	{}
 
 	void execute() {
-		mCbk(mAddress, std::move(mData));
+		mCbk(std::move(mFrom), std::move(mTo), std::move(mData));
 	}
 private:
-	Cbk								mCbk;
-	uint64_t						mAddress;
-	std::unique_ptr<XBeeBuffer>		mData;
+	Cbk											mCbk;
+	std::unique_ptr<Networking::Address>		mFrom;
+	std::unique_ptr<Networking::Address>		mTo;
+	std::unique_ptr<Networking::Buffer>			mData;
 };
 
 ///////////////////// XBeeNet /////////////////////
@@ -252,15 +260,23 @@ throw ()
 	mCtx->processor.process(std::move(cmd));
 }
 
-void XBeeNet::to(uint64_t address, std::unique_ptr< std::vector<uint8_t> > buffer)
+void XBeeNet::to(const Networking::Address* from, const Networking::Address* to,
+		std::unique_ptr<Networking::Buffer> buffer)
 throw ()
 {
+	assert(from);
+	assert(to);
+	assert(to->getOrigin()==Networking::Origin::XBEE);
+	assert(buffer.get());
+
 	std::unique_ptr<Utils::Command> cmd (new XBeeNetCommandTo(
-		[this] (uint64_t a, std::unique_ptr<XBeeBuffer> b) {
-				onTo(a, std::move(b));
-		},
-		address,
-		std::move(buffer)
+			[this] (std::unique_ptr<Networking::Address> a, std::unique_ptr<Networking::Address> b,
+					std::unique_ptr<Networking::Buffer> c) {
+					onTo(std::move(a), std::move(b), std::move(c));
+			},
+			from,
+			to,
+			std::move(buffer)
 	));
 	mCtx->processor.process(std::move(cmd));
 }
@@ -279,17 +295,23 @@ void XBeeNet::onFrom(std::unique_ptr< std::vector<uint8_t> > buffer) {
 	mCtx->fromBuffer->push(*buffer);
 }
 
-void XBeeNet::onTo(uint64_t address, std::unique_ptr<XBeeBuffer> buffer) {
+void XBeeNet::onTo(std::unique_ptr<Networking::Address> from_, std::unique_ptr<Networking::Address> to_,
+		std::unique_ptr<Networking::Buffer> buffer_) {
 	try {
+		// get address
+		std::unique_ptr<Networking::AddressXBeeNet> tTo =
+				Utils::dynamic_unique_ptr_cast<Networking::AddressXBeeNet, Networking::Address>(to_);
+		assert(tTo.get());
+		// make frame
 		XBeeFrame newframe(std::unique_ptr<XBeeFrameApiId>(new XBeeFrameApiId(XBeeFrameApiId::ZB_TX_REQ)));
 		newframe.setId(std::unique_ptr<XBeeFrameId>(new XBeeFrameId(XBeeFrameId::NO_RSP)));
 		newframe.setRadius(std::unique_ptr<XBeeFrameRadius>(new XBeeFrameRadius(XBeeFrameRadius::MAX)));
-		newframe.setAddr64Dst(std::unique_ptr<XBeeFrameAddr64Dst>(new XBeeFrameAddr64Dst(address)));
+		newframe.setAddr64Dst(std::unique_ptr<XBeeFrameAddr64Dst>(new XBeeFrameAddr64Dst(tTo->get())));
 		newframe.setAddr16Dst(std::unique_ptr<XBeeFrameAddr16Dst>(new XBeeFrameAddr16Dst(XBeeFrameAddr16Dst::UNKNOWN)));
 		newframe.setOptionsSend(std::unique_ptr<XBeeFrameOptionsSend>(new XBeeFrameOptionsSend()));
 		newframe.setData(std::unique_ptr<XBeeFrameData>(new XBeeFrameData(
-				buffer->begin(),
-				buffer->end())));
+				buffer_->begin(),
+				buffer_->end())));
 		std::unique_ptr<XBeeBuffer> buffer(new XBeeBuffer);
 		newframe.encode(*buffer);
 		{
@@ -325,7 +347,7 @@ void XBeeNet::onTo(uint64_t address, std::unique_ptr<XBeeBuffer> buffer) {
 		std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitXBeeEncoder(
 				std::move(buffer),
 				std::unique_ptr<Networking::Address>
-					(new Networking::AddressXBeeNet(address)),
+					(new Networking::AddressXBeeNet(tTo->get())),
 				std::unique_ptr<Networking::Address>()
 		));
 		Application::get().getRouter().process(std::move(unit));
@@ -352,7 +374,7 @@ void XBeeNet::onFrame(std::unique_ptr<XBeeBuffer> buffer) {
 		{
 			std::ios::fmtflags f(std::cout.flags() );
 			std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
-			std::cout<<"Data, size: "<<frame.getData()->getValue().size()<<std::endl;
+			std::cout<<"Data:"<<std::endl;
 			for (uint8_t i: frame.getData()->getValue()) {
 				std::cout<<(int)i<<" ";
 			}
@@ -361,7 +383,7 @@ void XBeeNet::onFrame(std::unique_ptr<XBeeBuffer> buffer) {
 		}
 		{
 			std::unique_ptr<XBeeBuffer> data(new XBeeBuffer(frame.getData()->getValue()));
-			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitXBeeNet(
+			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitXBee(
 					std::move(data),
 					std::unique_ptr<Networking::Address>
 						(new Networking::AddressXBeeNet(frame.getAddr64Src()->getValue())),

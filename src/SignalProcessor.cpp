@@ -51,14 +51,10 @@ private:
 	}
 
 	void onStop() {
-		try {
-			mSigSet.cancel();
-			mSigSet.clear();
-			mIoService.stop();
-			mIoService.reset();
-		} catch (boost::system::system_error& e) {
-			// ignore
-		}
+		boost::system::error_code ec;
+		mSigSet.cancel(ec);
+		mSigSet.clear(ec);
+		mIoService.stop();
 	}
 
 	void schedule() {
@@ -71,7 +67,7 @@ private:
 		while (isAlive()) {
 			try {
 				mIoService.reset();
-				mIoService.run_one();
+				mIoService.run();
 			} catch (boost::system::system_error& e) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
@@ -90,6 +86,8 @@ private:
 					// Signal to stop
 					std::unique_ptr<Utils::Command> cmd (new CommandApplicationStop);
 					Application::get().getProcessor().process(std::move(cmd));
+					boost::system::error_code ec;
+					mSigSet.clear(ec);
 				}
 					break;
 				default:

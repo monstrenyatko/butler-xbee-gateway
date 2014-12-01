@@ -25,8 +25,10 @@ namespace Utils {
 
 #ifdef UTILS_USE_BOOST_ATOMIC
 	typedef boost::atomic_bool atomic_bool;
+	typedef boost::atomic_uint32_t atomic_uint32_t;
 #else
 	typedef std::atomic_bool atomic_bool;
+	typedef std::atomic<uint32_t> atomic_uint32_t;
 #endif
 
 } /* namespace Utils */
