@@ -20,6 +20,8 @@
 /* System Includes */
 #include <string>
 #include <stdint.h>
+#include <memory>
+
 
 namespace Networking {
 

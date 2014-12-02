@@ -88,4 +88,4 @@ To be implemented
 Usage
 =====
 - Connect XBee Coordinator to PC where the XBeeGateway is installed.
-- Lunch the XBeeGateway.
+- Launch the XBeeGateway.

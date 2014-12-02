@@ -14,6 +14,10 @@
 #ifndef UTILS_ATOMIC_H_
 #define UTILS_ATOMIC_H_
 
+#ifndef __has_feature
+#define __has_feature(__x) 0
+#endif
+
 #if __has_feature(cxx_atomic)
 #include <atomic>
 #else

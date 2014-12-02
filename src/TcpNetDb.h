@@ -19,6 +19,8 @@
 /* External Includes */
 /* System Includes */
 #include <list>
+#include <memory>
+
 
 /* Forward declaration */
 namespace Networking {class Address;}

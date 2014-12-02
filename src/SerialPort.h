@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <memory>
 
 
 /* Forward declaration */

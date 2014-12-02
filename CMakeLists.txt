@@ -43,6 +43,13 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	add_definitions(-DBOOST_ASIO_DISABLE_KQUEUE)
 endif()
 
+#******************* System libraries *************
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	set(System_LIBRARIES "pthread")
+else()
+	set(System_LIBRARIES "")
+endif()
+
 #******************* Sources *************
 set(SOURCE_FILES "")
 set(SOURCE_FILES ${SOURCE_FILES} src/Application.cpp)
@@ -66,4 +73,4 @@ include_directories(${src})
 #******************* Executable *************
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(XBeeGateway ${SOURCE_FILES})
-target_link_libraries(XBeeGateway ${Boost_LIBRARIES})
+target_link_libraries(XBeeGateway ${System_LIBRARIES} ${Boost_LIBRARIES})

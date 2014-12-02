@@ -18,6 +18,8 @@
 /* External Includes */
 #include "NetworkingDefs.h"
 /* System Includes */
+#include <memory>
+
 
 /* Forward declaration */
 namespace boost {namespace asio {class io_service;}}
