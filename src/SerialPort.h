@@ -4,7 +4,7 @@
  * Purpose: Serial port read/write implementation.
  *
  *******************************************************************************
- * Copyright Monstrenyatko 2014.
+ * Copyright Monstrenyatko 2014-2015.
  *
  * Distributed under the MIT License.
  * (See accompanying file LICENSE or copy at http://opensource.org/licenses/MIT)
@@ -32,7 +32,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	SerialPort(const std::string& name, uint32_t baud) throw ();
+	SerialPort() throw ();
 
 	/**
 	 * Destructor

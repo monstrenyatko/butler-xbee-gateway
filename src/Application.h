@@ -4,15 +4,15 @@
  * Purpose: Main loop implementation and Global objects container.
  *
  *******************************************************************************
- * Copyright Monstrenyatko 2014.
+ * Copyright Monstrenyatko 2014-2015.
  *
  * Distributed under the MIT License.
  * (See accompanying file LICENSE or copy at http://opensource.org/licenses/MIT)
  *******************************************************************************
  */
 
-#ifndef SRC_APPLICATION_H_
-#define SRC_APPLICATION_H_
+#ifndef APPLICATION_H_
+#define APPLICATION_H_
 
 /* Internal Includes */
 #include "Error.h"
@@ -29,6 +29,7 @@ class SignalProcessor;
 class XBeeNet;
 class TcpNet;
 class Router;
+class Configuration;
 
 class Application {
 public:
@@ -49,7 +50,7 @@ public:
 	 *
 	 * @returns instance of the object.
 	 */
-	static Application& get() {return *mInstance;}
+	static Application& get() throw (Utils::Error);
 
 	/**
 	 * Run function for Main thread.
@@ -68,6 +69,7 @@ public:
 	XBeeNet&					getXBeeNet() {return *mXBeeNet;}
 	TcpNet&						getTcpNet() {return *mTcpNet;}
 	Router&						getRouter() {return *mRouter;}
+	Configuration&				getConfiguration() {return *mConfiguration;}
 private:
 	// Objects
 	static Application*				mInstance;
@@ -79,6 +81,7 @@ private:
 	XBeeNet*						mXBeeNet;
 	TcpNet*							mTcpNet;
 	Router*							mRouter;
+	Configuration*					mConfiguration;
 
 	// Do not copy
 	Application(const Application&);
@@ -89,4 +92,4 @@ private:
 	~Application() throw ();
 };
 
-#endif /* SRC_APPLICATION_H_ */
+#endif /* APPLICATION_H_ */

@@ -4,7 +4,7 @@
  * Purpose: TCP network. Connection.
  *
  *******************************************************************************
- * Copyright Monstrenyatko 2014.
+ * Copyright Monstrenyatko 2014-2015.
  *
  * Distributed under the MIT License.
  * (See accompanying file LICENSE or copy at http://opensource.org/licenses/MIT)
@@ -212,19 +212,7 @@ void TcpNetConnection::onRead(const boost::system::error_code& error, std::size_
 		if (qty) {
 			std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNetConnection)<<", size:"<<qty<<std::endl;
 			std::unique_ptr<Networking::Buffer> data
-						(new Networking::Buffer(mBufferRead,mBufferRead+qty));
-//			{
-//				std::ios::fmtflags f(std::cout.flags() );
-//				std::cout<<"New Frame, size:"<<data->size()<<std::endl;
-//				std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
-//				for (uint8_t i: *data) {
-//					std::cout<<(int)i<<" ";
-//				}
-//				if (!data->empty()) {
-//					std::cout << std::endl;
-//				}
-//				std::cout.flags(f);
-//			}
+						(new Networking::Buffer(mBufferRead, mBufferRead+qty));
 			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitTcp(
 					std::move(data),
 					std::move(mTo->clone()),	// To -> From

@@ -4,7 +4,7 @@
  * Purpose: Serial port read/write implementation.
  *
  *******************************************************************************
- * Copyright Monstrenyatko 2014.
+ * Copyright Monstrenyatko 2014-2015.
  *
  * Distributed under the MIT License.
  * (See accompanying file LICENSE or copy at http://opensource.org/licenses/MIT)
@@ -16,6 +16,7 @@
 #include "Thread.h"
 #include "CommandProcessor.h"
 #include "Commands.h"
+#include "Configuration.h"
 #include "Error.h"
 #include "Application.h"
 #include "Router.h"
@@ -26,16 +27,30 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
+/* Forward declaration */
+class SerialPortReader;
+class SerialPortWriter;
 
 #define SERIAL_PORT_READER_BUFFER_SIZE 512
 
+///////////////////// SerialPortContext /////////////////////
+struct SerialPortContext {
+	Utils::CommandProcessor							processor;
+	boost::asio::io_service							ioService;
+	std::unique_ptr<boost::asio::serial_port>		port;
+	std::string										portName;
+	uint32_t										portBaud;
+	std::unique_ptr<SerialPortReader>				portReader;
+	std::unique_ptr<SerialPortWriter>				portWriter;
+};
 
 ///////////////////// SerialPortReader /////////////////////
 class SerialPortReader : private Utils::Thread {
 public:
-	SerialPortReader(boost::asio::serial_port& port)
+	SerialPortReader(SerialPortContext& ctx)
 	throw ():
-			mPort(port)
+			mCtx(ctx),
+			mPort(*(ctx.port))
 	{}
 
 	void onStarted() {
@@ -60,6 +75,7 @@ public:
 	}
 private:
 	// Objects
+	SerialPortContext&				mCtx;
 	boost::asio::serial_port&		mPort;
 	uint8_t							mBufferRead[SERIAL_PORT_READER_BUFFER_SIZE];
 
@@ -70,11 +86,11 @@ private:
 	void onReceive(const boost::system::error_code& error, std::size_t qty) {
 		if (qty) {
 			std::unique_ptr< std::vector<uint8_t> > data
-						(new std::vector<uint8_t>(mBufferRead,mBufferRead+qty));
+						(new std::vector<uint8_t>(mBufferRead, mBufferRead+qty));
 			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitSerial(
 					std::move(data),
 					std::unique_ptr<Networking::Address>
-						(new Networking::AddressSerial("/dev/tty.stub")),
+						(new Networking::AddressSerial(mCtx.portName)),
 					std::unique_ptr<Networking::Address>()
 			));
 			Application::get().getRouter().process(std::move(unit));
@@ -134,9 +150,9 @@ private:
 ///////////////////// SerialPortWriter /////////////////////
 class SerialPortWriter {
 public:
-	SerialPortWriter(boost::asio::serial_port& port)
+	SerialPortWriter(SerialPortContext& ctx)
 	throw ():
-		mPort(port)
+		mPort(*(ctx.port))
 	{}
 
 	void write(std::unique_ptr< std::vector<uint8_t> > data) {
@@ -156,17 +172,6 @@ public:
 private:
 	// Objects
 	boost::asio::serial_port&		mPort;
-};
-
-///////////////////// SerialPortContext /////////////////////
-struct SerialPortContext {
-	Utils::CommandProcessor							processor;
-	boost::asio::io_service							ioService;
-	std::unique_ptr<boost::asio::serial_port>		port;
-	std::string										portName;
-	uint32_t										portBaud;
-	std::unique_ptr<SerialPortReader>				portReader;
-	std::unique_ptr<SerialPortWriter>				portWriter;
 };
 
 ///////////////////// SerialPortCommands /////////////////////
@@ -194,15 +199,10 @@ private:
 };
 
 ///////////////////// SerialPort /////////////////////
-SerialPort::SerialPort(const std::string& name, uint32_t baud)
+SerialPort::SerialPort()
 throw ():
 		mCtx(new SerialPortContext)
 {
-	mCtx->port.reset(new boost::asio::serial_port(mCtx->ioService));
-	mCtx->portName = name;
-	mCtx->portBaud = baud;
-	mCtx->portReader.reset(new SerialPortReader(*mCtx->port));
-	mCtx->portWriter.reset(new SerialPortWriter(*mCtx->port));
 }
 
 SerialPort::~SerialPort()
@@ -218,6 +218,11 @@ throw (Utils::Error)
 	try {
 		try {
 			// Prepare
+			mCtx->port.reset(new boost::asio::serial_port(mCtx->ioService));
+			mCtx->portName = Application::get().getConfiguration().serial.name;
+			mCtx->portBaud = Application::get().getConfiguration().serial.baud;
+			mCtx->portReader.reset(new SerialPortReader(*mCtx));
+			mCtx->portWriter.reset(new SerialPortWriter(*mCtx));
 			mCtx->port->open(mCtx->portName);
 			mCtx->port->set_option(boost::asio::serial_port_base::baud_rate(mCtx->portBaud));
 			mCtx->port->set_option(boost::asio::serial_port_base::character_size(8));

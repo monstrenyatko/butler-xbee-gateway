@@ -4,7 +4,7 @@
  * Purpose: Routing between networks
  *
  *******************************************************************************
- * Copyright Monstrenyatko 2014.
+ * Copyright Monstrenyatko 2014-2015.
  *
  * Distributed under the MIT License.
  * (See accompanying file LICENSE or copy at http://opensource.org/licenses/MIT)
@@ -17,6 +17,7 @@
 #include "CommandProcessor.h"
 #include "Error.h"
 #include "Application.h"
+#include "Configuration.h"
 #include "XBeeNet.h"
 #include "TcpNet.h"
 #include "SerialPort.h"
@@ -109,7 +110,12 @@ void Router::onProcess(std::unique_ptr<Networking::DataUnit> unit) {
 					if (!u) {
 						throw Utils::Error("Wrong unit type");
 					}
-					Networking::AddressTcp to({"test.mosquitto.org",1883});
+					Networking::AddressTcp to(
+						{
+							Application::get().getConfiguration().tcp.address,
+							Application::get().getConfiguration().tcp.port
+						}
+					);
 					Application::get().getTcpNet().send(u->getFrom(), &to, u->popData());
 				}
 					break;

@@ -4,7 +4,7 @@
  * Purpose: Main loop implementation and Global objects container.
  *
  *******************************************************************************
- * Copyright Monstrenyatko 2014.
+ * Copyright Monstrenyatko 2014-2015.
  *
  * Distributed under the MIT License.
  * (See accompanying file LICENSE or copy at http://opensource.org/licenses/MIT)
@@ -19,6 +19,7 @@
 #include "XBeeNet.h"
 #include "TcpNet.h"
 #include "Router.h"
+#include "Configuration.h"
 /* External Includes */
 /* System Includes */
 #include <iostream>
@@ -37,8 +38,18 @@ throw (Utils::Error)
 void Application::destroy()
 throw ()
 {
-	delete mInstance;
+	Application* tmp = mInstance;
 	mInstance = NULL;
+	delete tmp;
+}
+
+Application& Application::get()
+throw (Utils::Error)
+{
+	if (!mInstance) {
+		throw Utils::Error("Application is not initialized");
+	}
+	return *mInstance;
 }
 
 Application::Application()
@@ -50,8 +61,10 @@ throw (Utils::Error)
 	mSerial(NULL),
 	mXBeeNet(NULL),
 	mTcpNet(NULL),
-	mRouter(NULL)
+	mRouter(NULL),
+	mConfiguration(NULL)
 {
+	std::unique_ptr<Configuration> ptrConfiguration;
 	std::unique_ptr<Utils::CommandProcessor> ptrProcessor;
 	std::unique_ptr<SignalProcessor> ptrSignalProcessor;
 	std::unique_ptr<SerialPort> ptrSerial;
@@ -62,9 +75,10 @@ throw (Utils::Error)
 	// initialize objects in exception-save mode
 	try {
 		std::cout<<"INITIALIZATION"<<std::endl;
+		ptrConfiguration.reset(new Configuration());
 		ptrProcessor.reset(new Utils::CommandProcessor);
 		ptrSignalProcessor.reset(new SignalProcessor);
-		ptrSerial.reset(new SerialPort("/dev/tty.usbserial-AH031GNH", 57600));
+		ptrSerial.reset(new SerialPort());
 		ptrXBeeNet.reset(new XBeeNet());
 		ptrTcpNet.reset(new TcpNet());
 		ptrRouter.reset(new Router);
@@ -72,26 +86,14 @@ throw (Utils::Error)
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
 	}
 
-	// start all services
-	std::cout<<"START"<<std::endl;
-	try {
-		ptrProcessor->start();
-		ptrSignalProcessor->start();
-		ptrSerial->start();
-		ptrXBeeNet->start();
-		ptrTcpNet->start();
-		ptrRouter->start();
-	} catch (std::exception& e) {
-		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
-	}
-
-	// no exceptions from this point
+	// no exceptions from this point => destructor will control deallocations
 	mProcessor = ptrProcessor.release();
 	mSignalProcessor = ptrSignalProcessor.release();
 	mSerial = ptrSerial.release();
 	mXBeeNet = ptrXBeeNet.release();
 	mTcpNet = ptrTcpNet.release();
 	mRouter = ptrRouter.release();
+	mConfiguration = ptrConfiguration.release();
 }
 
 Application::~Application()
@@ -119,16 +121,33 @@ throw ()
 		delete mSerial;
 		delete mSignalProcessor;
 		delete mProcessor;
+		delete mConfiguration;
 	} catch (std::exception& e) {
 		std::cerr<<UTILS_STR_CLASS_FUNCTION(Application)<<std::endl;
 	}
 }
 
 void Application::run() throw () {
-	std::cout<<"PROCESSING"<<std::endl;
-	// wait request to finish
-	mSem.wait();
-	std::cout<<"FINISHING"<<std::endl;
+	bool started = false;
+	// start all services
+	std::cout<<"START"<<std::endl;
+	try {
+		mProcessor->start();
+		mSignalProcessor->start();
+		mSerial->start();
+		mXBeeNet->start();
+		mTcpNet->start();
+		mRouter->start();
+		started = true;
+	} catch (std::exception& e) {
+		std::cerr<<"run(), starting, Error: "<<e.what()<<std::endl;
+	}
+	if (started) {
+		std::cout<<"PROCESSING"<<std::endl;
+		// wait request to finish
+		mSem.wait();
+		std::cout<<"FINISHING"<<std::endl;
+	}
 }
 
 void Application::stop() throw () {
