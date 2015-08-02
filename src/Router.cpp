@@ -23,7 +23,7 @@
 #include "SerialPort.h"
 /* External Includes */
 /* System Includes */
-#include <iostream>
+
 
 ///////////////////// RouterContext /////////////////////
 struct RouterContext {
@@ -56,6 +56,7 @@ private:
 ///////////////////// Router /////////////////////
 Router::Router()
 :
+	mLog(__FUNCTION__),
 	mCtx(new RouterContext)
 {}
 
@@ -135,6 +136,6 @@ void Router::onProcess(std::unique_ptr<Networking::DataUnit> unit) {
 			throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Router));
 		}
 	} catch (std::exception& e) {
-		std::cerr<<"Routing, error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", error: "<<e.what();
 	}
 }

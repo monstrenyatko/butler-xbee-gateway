@@ -16,6 +16,7 @@
 
 /* Internal Includes */
 #include "Id.h"
+#include "Logger.h"
 /* External Includes */
 /* System Includes */
 #include <list>
@@ -64,6 +65,7 @@ public:
 	 */
 	void destroy(Utils::Id id);
 private:
+	Utils::Logger							mLog;
 	std::list<TcpNetConnection*>			mConnections;
 
 	void destroy(TcpNetConnection*);

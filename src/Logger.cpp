@@ -1,10 +1,10 @@
 /*
  *******************************************************************************
  *
- * Purpose: Main function.
+ * Purpose: Utils. Logger endpoint implementation.
  *
  *******************************************************************************
- * Copyright Monstrenyatko 2014.
+ * Copyright Monstrenyatko 2015.
  *
  * Distributed under the MIT License.
  * (See accompanying file LICENSE or copy at http://opensource.org/licenses/MIT)
@@ -12,26 +12,20 @@
  */
 
 /* Internal Includes */
-#include "Application.h"
 #include "Logger.h"
 #include "LogManager.h"
 /* External Includes */
 /* System Includes */
 
+namespace Utils {
 
-int main(int argc, char* argv[]) {
-	Utils::Logger log("Main");
-	try {
-		Application::initialize();
-		//testThread.start();
-		Application::get().run();
-		//testThread.stop();
-		Application::destroy();
-	} catch (std::exception& e) {
-		*log.error() << e.what();
+LogStream& LogStream::flush() {
+	std::string log(str());
+	if (!log.empty()) {
+		LogManager::get().log(getLevel(), getName(), log);
+		str(std::string());
 	}
-	*log.info() << "EXIT";
-	// It was the last log => flush everything in logger
-	Utils::LogManager::destroy();
-	return 0;
+	return *this;
 }
+
+} /* namespace Utils */

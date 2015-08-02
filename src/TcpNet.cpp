@@ -24,7 +24,6 @@
 /* External Includes */
 /* System Includes */
 #include <boost/asio.hpp>
-#include <iostream>
 #include <assert.h>
 
 ///////////////////// TcpNetIoService /////////////////////
@@ -97,6 +96,7 @@ private:
 ///////////////////// TcpNet /////////////////////
 TcpNet::TcpNet()
 :
+	mLog(__FUNCTION__),
 	mCtx(new TcpNetContext)
 {
 }
@@ -140,7 +140,7 @@ throw ()
 void TcpNet::onSend(std::unique_ptr<Networking::Address> from, std::unique_ptr<Networking::Address> to,
 		std::unique_ptr<Networking::Buffer> buffer)
 {
-	std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNet)<<", size:"<<buffer->size()<<std::endl;
+	*mLog.debug() << UTILS_STR_FUNCTION << ", size:" << buffer->size();
 	try {
 		TcpNetConnection* connection = mCtx->db.get(*from, *to);
 		if (!connection) {
@@ -156,9 +156,9 @@ void TcpNet::onSend(std::unique_ptr<Networking::Address> from, std::unique_ptr<N
 		}
 		// send
 		connection->send(std::move(buffer));
-		std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNet)<<", push to ID:"<<connection->getId()<<std::endl;
+		*mLog.debug() << UTILS_STR_FUNCTION << ", push to ID: " << connection->getId();
 	} catch (Utils::Error& e) {
-		std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNet)<<", error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 	}
 }
 

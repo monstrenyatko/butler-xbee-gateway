@@ -22,8 +22,6 @@
 #include "Configuration.h"
 /* External Includes */
 /* System Includes */
-#include <iostream>
-#include <assert.h>
 
 
 Application* Application::mInstance = NULL;
@@ -31,12 +29,14 @@ Application* Application::mInstance = NULL;
 void Application::initialize()
 throw (Utils::Error)
 {
-	assert(!mInstance);
+	if(mInstance) {
+		throw Utils::Error("Application has been initialized");
+	}
 	mInstance = new Application();
 }
 
 void Application::destroy()
-throw ()
+throw (Utils::Error)
 {
 	Application* tmp = mInstance;
 	mInstance = NULL;
@@ -55,6 +55,7 @@ throw (Utils::Error)
 Application::Application()
 throw (Utils::Error)
 :
+	mLog(__FUNCTION__),
 	mSem(0, 1),
 	mProcessor(NULL),
 	mSignalProcessor(NULL),
@@ -74,7 +75,7 @@ throw (Utils::Error)
 
 	// initialize objects in exception-save mode
 	try {
-		std::cout<<"INITIALIZATION"<<std::endl;
+		*mLog.info() << "INITIALIZATION";
 		ptrConfiguration.reset(new Configuration());
 		ptrProcessor.reset(new Utils::CommandProcessor);
 		ptrSignalProcessor.reset(new SignalProcessor);
@@ -97,10 +98,10 @@ throw (Utils::Error)
 }
 
 Application::~Application()
-throw ()
+throw (Utils::Error)
 {
 	// stop all services
-	std::cout<<"STOP"<<std::endl;
+	*mLog.info() << "STOP";
 	try {
 		mRouter->stop();
 		mTcpNet->stop();
@@ -113,7 +114,7 @@ throw ()
 	}
 
 	// clean objects
-	std::cout<<"DESTROY"<<std::endl;
+	*mLog.info() << "DESTROY";
 	try {
 		delete mRouter;
 		delete mTcpNet;
@@ -123,14 +124,14 @@ throw ()
 		delete mProcessor;
 		delete mConfiguration;
 	} catch (std::exception& e) {
-		std::cerr<<UTILS_STR_CLASS_FUNCTION(Application)<<std::endl;
+		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
 	}
 }
 
 void Application::run() throw () {
 	bool started = false;
 	// start all services
-	std::cout<<"START"<<std::endl;
+	*mLog.info() << "START";
 	try {
 		mProcessor->start();
 		mSignalProcessor->start();
@@ -140,16 +141,17 @@ void Application::run() throw () {
 		mRouter->start();
 		started = true;
 	} catch (std::exception& e) {
-		std::cerr<<"run(), starting, Error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", starting, error: " << e.what();
 	}
 	if (started) {
-		std::cout<<"PROCESSING"<<std::endl;
+		*mLog.info() << "PROCESSING";
 		// wait request to finish
 		mSem.wait();
-		std::cout<<"FINISHING"<<std::endl;
+		*mLog.info() << "FINISHING";
 	}
 }
 
-void Application::stop() throw () {
+void Application::stop(const std::string& reason) throw () {
+	*mLog.info() << UTILS_STR_FUNCTION << ", reason: " << reason;
 	mSem.post();
 }

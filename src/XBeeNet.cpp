@@ -23,8 +23,7 @@
 #include "Memory.h"
 /* System Includes */
 #include <assert.h>
-#include <iostream>
-#include <iomanip>
+
 
 #define API_START_DELIM						((uint8_t) 0x7E)
 #define API_ESCAPE							((uint8_t) 0x7D)
@@ -38,6 +37,7 @@ public:
 	typedef std::function<void(std::unique_ptr<XBeeBuffer>)> onFrame;
 
 	XBeeNetFromBuffer(onFrame cbk):
+		mLog(__FUNCTION__),
 		mOnFrameCbk(cbk),
 		mBuffer(new XBeeBuffer),
 		mIsEscapeSequence(false),
@@ -74,8 +74,7 @@ public:
 						mBuffer->push_back(DO_API_ESCPE(b));
 						continue;
 					default:
-						std::cerr<<UTILS_STR_CLASS_FUNCTION(XBeeNetFromBuffer)
-							<<", bad Escape"<<std::endl;
+						*mLog.error() << UTILS_STR_FUNCTION << ", bad Escape";
 						drop();
 						continue;
 				}
@@ -86,8 +85,7 @@ public:
 					mIsEscapeSequence = true;
 					continue;
 				case API_START_DELIM:
-					std::cerr<<UTILS_STR_CLASS_FUNCTION(XBeeNetFromBuffer)
-						<<", unexpected start of next frame"<<std::endl;
+					*mLog.error() << UTILS_STR_FUNCTION << ", unexpected start of next frame";
 					drop();
 					// no break
 				default:
@@ -111,6 +109,7 @@ public:
 
 private:
 	// Objects
+	Utils::Logger								mLog;
 	onFrame										mOnFrameCbk;
 	std::unique_ptr<XBeeBuffer>					mBuffer;
 	bool										mIsEscapeSequence;
@@ -229,6 +228,7 @@ private:
 ///////////////////// XBeeNet /////////////////////
 XBeeNet::XBeeNet()
 :
+	mLog(__FUNCTION__),
 	mCtx(new XBeeNetContext)
 {
 	mCtx->fromBuffer.reset(new XBeeNetFromBuffer( [this] (std::unique_ptr<XBeeBuffer> a) {
@@ -283,15 +283,8 @@ throw ()
 
 ///////////////////// XBeeNet::Internal /////////////////////
 void XBeeNet::onFrom(std::unique_ptr< std::vector<uint8_t> > buffer) {
-	std::ios::fmtflags f(std::cout.flags() );
-	std::cout<<UTILS_STR_CLASS_FUNCTION(XBeeNet)<<", data.size:"<<buffer->size()<<std::endl;
-	for (uint8_t i: *buffer) {
-		std::cout<<std::hex<<std::setw(2)<<std::setfill('0')<<(int)i<<" ";
-	}
-	if (!buffer->empty()) {
-		std::cout << std::endl;
-	}
-	std::cout.flags(f);
+	*mLog.debug() << UTILS_STR_FUNCTION << ", buffer.size: " << buffer->size();
+	*mLog.trace() << UTILS_STR_FUNCTION << ", buffer: " << Utils::putArray(*buffer);
 	mCtx->fromBuffer->push(*buffer);
 }
 
@@ -314,36 +307,19 @@ void XBeeNet::onTo(std::unique_ptr<Networking::Address> from_, std::unique_ptr<N
 				buffer_->end())));
 		std::unique_ptr<XBeeBuffer> buffer(new XBeeBuffer);
 		newframe.encode(*buffer);
-		{
-			std::ios::fmtflags f(std::cout.flags() );
-			std::cout<<"Data, size: "<<newframe.getData()->getValue().size()<<std::endl;
-			std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
-			for (uint8_t i: newframe.getData()->getValue()) {
-				std::cout<<(int)i<<" ";
-			}
-			std::cout<<std::endl;
-			std::cout<<"NewFrame, size: "<<buffer->size()<<std::endl;
-			for (uint8_t i: *buffer) {
-				std::cout<<std::hex<<std::setw(2)<<std::setfill('0')<<(int)i<<" ";
-			}
-			if (!buffer->empty()) {
-				std::cout << std::endl;
-			}
-			std::cout.flags(f);
-		}
+		*mLog.debug() << UTILS_STR_FUNCTION << ", data.size: "
+			<< newframe.getData()->getValue().size();
+		*mLog.trace() << UTILS_STR_FUNCTION << ", data: "
+			<< Utils::putArray(newframe.getData()->getValue());
+		*mLog.debug() << UTILS_STR_FUNCTION << ", frame.size: "
+			<< buffer->size();
+		*mLog.trace() << UTILS_STR_FUNCTION << ", frame: "
+			<< Utils::putArray(*buffer);
 		XBeeNetTo::addEscapes(*buffer);
-		{
-			std::ios::fmtflags f(std::cout.flags() );
-			std::cout<<"NewFrame with Escapes, size: "<<buffer->size()<<std::endl;
-			std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
-			for (uint8_t i: *buffer) {
-				std::cout<<(int)i<<" ";
-			}
-			if (!buffer->empty()) {
-				std::cout << std::endl;
-			}
-			std::cout.flags(f);
-		}
+		*mLog.debug() << UTILS_STR_FUNCTION << ", escaped-frame.size: "
+			<< buffer->size();
+		*mLog.trace() << UTILS_STR_FUNCTION << ", escaped-frame: "
+			<< Utils::putArray(*buffer);
 		std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitXBeeEncoder(
 				std::move(buffer),
 				std::unique_ptr<Networking::Address>
@@ -352,35 +328,21 @@ void XBeeNet::onTo(std::unique_ptr<Networking::Address> from_, std::unique_ptr<N
 		));
 		Application::get().getRouter().process(std::move(unit));
 	} catch (Utils::Error& e) {
-		std::cerr<<"Frame encoder, error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 	}
 }
 
 void XBeeNet::onFrame(std::unique_ptr<XBeeBuffer> buffer) {
-	{
-		std::ios::fmtflags f(std::cout.flags() );
-		std::cout<<"New Frame, size:"<<buffer->size()<<std::endl;
-		std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
-		for (uint8_t i: *buffer) {
-			std::cout<<(int)i<<" ";
-		}
-		if (!buffer->empty()) {
-			std::cout << std::endl;
-		}
-		std::cout.flags(f);
-	}
+	*mLog.debug() << UTILS_STR_FUNCTION << ", frame.size: "
+		<< buffer->size();
+	*mLog.trace() << UTILS_STR_FUNCTION << ", frame: "
+		<< Utils::putArray(*buffer);
 	try {
 		XBeeFrame frame(*buffer);
-		{
-			std::ios::fmtflags f(std::cout.flags() );
-			std::cout<<std::hex<<std::setw(2)<<std::setfill('0');
-			std::cout<<"Data:"<<std::endl;
-			for (uint8_t i: frame.getData()->getValue()) {
-				std::cout<<(int)i<<" ";
-			}
-			std::cout<<std::endl;
-			std::cout.flags(f);
-		}
+		*mLog.debug() << UTILS_STR_FUNCTION << ", data.size: "
+			<< frame.getData()->getValue().size();
+		*mLog.trace() << UTILS_STR_FUNCTION << ", data: "
+			<< Utils::putArray(frame.getData()->getValue());
 		{
 			std::unique_ptr<XBeeBuffer> data(new XBeeBuffer(frame.getData()->getValue()));
 			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitXBee(
@@ -392,6 +354,6 @@ void XBeeNet::onFrame(std::unique_ptr<XBeeBuffer> buffer) {
 			Application::get().getRouter().process(std::move(unit));
 		}
 	} catch (Utils::Error& e) {
-		std::cerr<<"Frame parser, error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 	}
 }

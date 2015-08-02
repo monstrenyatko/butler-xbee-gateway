@@ -14,10 +14,10 @@
 /* Internal Includes */
 #include "Configuration.h"
 #include "Error.h"
+#include "Logger.h"
 /* External Includes */
 /* System Includes */
 #include <boost/property_tree/json_parser.hpp>
-#include <iostream>
 
 
 Configuration::Configuration() {
@@ -45,9 +45,9 @@ Configuration::~Configuration() throw () {
 }
 
 void Configuration::dump() {
-	std::cout<<"CONFIGURATION"<<std::endl;
-	std::cout<<"\t"<<"serial.name = "<<serial.name<<std::endl;
-	std::cout<<"\t"<<"serial.boud = "<<serial.baud<<std::endl;
-	std::cout<<"\t"<<"tcp.address = "<<tcp.address<<std::endl;
-	std::cout<<"\t"<<"tcp.port    = "<<tcp.port<<std::endl;
+	Utils::Logger log("Configuration");
+	*log.debug() << "serial.name = " << serial.name;
+	*log.debug() << "serial.boud = " << serial.baud;
+	*log.debug() << "tcp.address = " << tcp.address;
+	*log.debug() << "tcp.port    = " << tcp.port;
 }

@@ -17,6 +17,7 @@
 /* Internal Includes */
 #include "Error.h"
 #include "Semaphore.h"
+#include "Logger.h"
 /* External Includes */
 /* System Includes */
 
@@ -42,7 +43,7 @@ public:
 	/**
 	 * Destroys the object.
 	 */
-	static void destroy() throw ();
+	static void destroy() throw (Utils::Error);
 
 	/**
 	 * Gets the access to the object.
@@ -61,7 +62,7 @@ public:
 	/**
 	 * Stops the run() cycle.
 	 */
-	void stop() throw ();
+	void stop(const std::string& reason) throw ();
 
 	// Available services
 	Utils::CommandProcessor&	getProcessor() {return *mProcessor;}
@@ -73,6 +74,7 @@ public:
 private:
 	// Objects
 	static Application*				mInstance;
+	Utils::Logger					mLog;
 	Utils::Semaphore				mSem;
 	// Services
 	Utils::CommandProcessor*		mProcessor;
@@ -89,7 +91,7 @@ private:
 
 	// Internal
 	Application() throw (Utils::Error);
-	~Application() throw ();
+	~Application() throw (Utils::Error);
 };
 
 #endif /* APPLICATION_H_ */

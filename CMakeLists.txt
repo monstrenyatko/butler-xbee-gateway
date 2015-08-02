@@ -14,7 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #******************** Find Libs *******************
 #**** Boost ****
-find_package(Boost 1.45.0 REQUIRED COMPONENTS system)
+find_package(Boost 1.45.0 REQUIRED COMPONENTS system date_time)
 if (NOT Boost_FOUND)
 	MESSAGE(FATAL_ERROR "Boost are not found")
 else()
@@ -56,6 +56,8 @@ set(SOURCE_FILES ${SOURCE_FILES} src/Application.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/CommandProcessor.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/Commands.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/Configuration.cpp)
+set(SOURCE_FILES ${SOURCE_FILES} src/Logger.cpp)
+set(SOURCE_FILES ${SOURCE_FILES} src/LogManager.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/Main.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/Router.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/Semaphore.cpp)

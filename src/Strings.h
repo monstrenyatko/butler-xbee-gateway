@@ -18,5 +18,6 @@
  * Generates string class_name::__FUNCTION__
  */
 #define UTILS_STR_CLASS_FUNCTION(class_name) (std::string( #class_name "::" ) + __FUNCTION__)
+#define UTILS_STR_FUNCTION (std::string(__FUNCTION__) + "()")
 
 #endif /* UTILS_STRINGS_H_ */

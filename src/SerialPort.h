@@ -16,6 +16,7 @@
 
 /* Internal Includes */
 #include "Error.h"
+#include "Logger.h"
 /* External Includes */
 /* System Includes */
 #include <stdint.h>
@@ -57,6 +58,7 @@ public:
 	void  write(std::unique_ptr< std::vector<uint8_t> > buffer) throw ();
 private:
 	// Objects
+	Utils::Logger					mLog;
 	SerialPortContext*				mCtx;
 
 	// Do not copy

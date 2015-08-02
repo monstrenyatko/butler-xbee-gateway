@@ -18,25 +18,25 @@
 #include "Command.h"
 /* External Includes */
 /* System Includes */
-#include <memory>
-#include <vector>
 #include <string>
 
 
 class CommandApplicationStop: public Utils::Command {
 public:
-	CommandApplicationStop() {}
+	CommandApplicationStop(const std::string& reason)
+	: mReason(reason) {}
 	void execute();
 private:
+	std::string		mReason;
 };
 
 class CommandSerialClose: public Utils::Command {
 public:
 	CommandSerialClose(const std::string& cause)
-	:mData(cause) {};
+	: mCause(cause) {};
 	void execute();
 private:
-	std::string		mData;
+	std::string		mCause;
 };
 
 #endif /* COMMANDS_H_ */

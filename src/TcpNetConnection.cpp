@@ -24,8 +24,7 @@
 #include "CommandProcessor.h"
 /* System Includes */
 #include <boost/lexical_cast.hpp>
-#include <iostream>
-#include <iomanip>
+
 
 ///////////////////// TcpNetCommands /////////////////////
 class TcpNetCommandConnectionDestroy: public TcpNetCommand {
@@ -51,6 +50,7 @@ TcpNetConnection::TcpNetConnection(TcpNet& owner,
 		std::unique_ptr<Networking::AddressTcp> to)
 throw (Utils::Error)
 :
+	mLog(__FUNCTION__),
 	mState (STATE_NEW),
 	mId(mIdGen.get()),
 	mOwner(owner),
@@ -89,7 +89,7 @@ void TcpNetConnection::send(std::unique_ptr<Networking::Buffer> buffer) {
 			scheduleWrite();
 		}
 	} catch (Utils::Error& e) {
-		std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNetConnection)<<", error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 		destroy();
 	}
 }
@@ -200,7 +200,7 @@ void TcpNetConnection::onConnect(const boost::system::error_code& error)
 			scheduleWrite();
 		}
 	} catch (Utils::Error& e) {
-		std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNetConnection)<<", error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 		destroy();
 	}
 }
@@ -210,7 +210,7 @@ void TcpNetConnection::onRead(const boost::system::error_code& error, std::size_
 	if (!isAlive()) return;
 	try {
 		if (qty) {
-			std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNetConnection)<<", size:"<<qty<<std::endl;
+			*mLog.debug() << UTILS_STR_FUNCTION << ", size: " << qty;
 			std::unique_ptr<Networking::Buffer> data
 						(new Networking::Buffer(mBufferRead, mBufferRead+qty));
 			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitTcp(
@@ -221,13 +221,13 @@ void TcpNetConnection::onRead(const boost::system::error_code& error, std::size_
 			Application::get().getRouter().process(std::move(unit));
 		}
 		if (error == boost::asio::error::eof || error) {
-			std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNetConnection)<<", error:"<<error.message()<<std::endl;
+			*mLog.error() << UTILS_STR_FUNCTION << ", error: " << error.message();
 			destroy();
 		} else {
 			scheduleRead();
 		}
 	} catch (Utils::Error& e) {
-		std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNetConnection)<<", error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 		destroy();
 	}
 }
@@ -250,7 +250,7 @@ void TcpNetConnection::onWrite(const boost::system::error_code& error, std::size
 			scheduleWrite(shift);
 		}
 	} catch (Utils::Error& e) {
-		std::cout<<UTILS_STR_CLASS_FUNCTION(TcpNetConnection)<<", error: "<<e.what()<<std::endl;
+		*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 		destroy();
 	}
 }

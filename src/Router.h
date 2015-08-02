@@ -15,6 +15,7 @@
 #define ROUTER_H_
 
 /* Internal Includes */
+#include "Logger.h"
 /* External Includes */
 /* System Includes */
 #include <memory>
@@ -56,6 +57,7 @@ public:
 	void process(std::unique_ptr<Networking::DataUnit> unit);
 private:
 	// Objects
+	Utils::Logger				mLog;
 	RouterContext*				mCtx;
 
 	// Do not copy

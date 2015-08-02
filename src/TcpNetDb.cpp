@@ -14,15 +14,16 @@
 /* Internal Includes */
 #include "TcpNetDb.h"
 #include "TcpNetConnection.h"
-#include "Error.h"
 /* External Includes */
 /* System Includes */
 #include <assert.h>
-#include <iostream>
 
 
 ///////////////////// TcpNetDb /////////////////////
-TcpNetDb::TcpNetDb() {
+TcpNetDb::TcpNetDb()
+:
+	mLog(__FUNCTION__)
+{
 }
 
 TcpNetDb::~TcpNetDb() {
@@ -46,7 +47,7 @@ TcpNetConnection* TcpNetDb::get(const Networking::Address& from, const Networkin
 
 void TcpNetDb::put(std::unique_ptr<TcpNetConnection> connection) {
 	assert(connection.get());
-	std::cout<< UTILS_STR_CLASS_FUNCTION(TcpNetDb)<<", Id:"<<connection->getId()<<std::endl;
+	*mLog.debug() << UTILS_STR_FUNCTION << ", Id: " << connection->getId();
 	for (auto it = mConnections.begin(); it!=mConnections.end(); it++) {
 		if (connection->getFrom()->isEqual(*((*it)->getFrom()))
 			&& connection->getTo()->isEqual(*((*it)->getTo())))
@@ -75,6 +76,6 @@ void TcpNetDb::destroy(Utils::Id id) {
 
 ///////////////////// TcpNetDb::Internal /////////////////////
 void TcpNetDb::destroy(TcpNetConnection* connection) {
-	std::cout<< UTILS_STR_CLASS_FUNCTION(TcpNetDb)<<", Id:"<<connection->getId()<<std::endl;
+	*mLog.debug() << UTILS_STR_FUNCTION << ", Id: " << connection->getId();
 	delete connection;
 }

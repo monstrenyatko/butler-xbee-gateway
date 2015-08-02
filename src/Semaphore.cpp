@@ -31,6 +31,7 @@ void Semaphore::wait()
 	mCond.wait(locker, [this]{ return mCount > 0; });
 	mCount--;
 }
+
 bool Semaphore::try_wait()
 {
 	std::lock_guard<std::mutex> locker(mMtx);

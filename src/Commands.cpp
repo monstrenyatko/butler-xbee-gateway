@@ -13,24 +13,18 @@
 
 /* Internal Includes */
 #include "Commands.h"
-#include "Error.h"
 #include "Application.h"
 #include "CommandProcessor.h"
-#include "SerialPort.h"
-#include "XBeeNet.h"
 /* External Includes */
 /* System Includes */
-#include <iostream>
-#include <iomanip>
 
 
 void CommandApplicationStop::execute() {
-	Application::get().stop();
+	Application::get().stop(mReason);
 }
 
 void CommandSerialClose::execute() {
-	std::cerr<<UTILS_STR_CLASS_FUNCTION(CommandSerialClose)<<", cause:"<<mData<<std::endl;
 	// stop
-	std::unique_ptr<Utils::Command> cmd (new CommandApplicationStop);
+	std::unique_ptr<Utils::Command> cmd (new CommandApplicationStop("Serial: " + mCause));
 	Application::get().getProcessor().process(std::move(cmd));
 }

@@ -16,7 +16,6 @@
 #include "Error.h"
 /* External Includes */
 /* System Includes */
-#include <iostream>
 #include <assert.h>
 
 
@@ -24,6 +23,7 @@ namespace Utils {
 
 CommandProcessor::CommandProcessor()
 :
+	mLog(__FUNCTION__),
 	mSem(0, 1)
 {
 }
@@ -64,8 +64,8 @@ void CommandProcessor::loop(void)
 			try {
 				cmd->execute();
 			} catch (std::exception &e) {
-				std::cerr<<UTILS_STR_CLASS_FUNCTION(CommandProcessor)
-						<<", Command::execute, error: " << e.what() << std::endl;
+				*mLog.error() << UTILS_STR_FUNCTION
+						<<", Command::execute, error: " << e.what();
 			}
 			mMtx.lock();
 		}

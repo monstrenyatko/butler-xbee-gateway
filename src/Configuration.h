@@ -32,12 +32,12 @@ public:
 		std::string		name;
 		uint32_t		baud;
 
-	} serial;
+	} serial = {"/dev/serial", 57600};
 
 	struct Tcp {
 		std::string		address;
 		uint32_t		port;
-	} tcp;
+	} tcp = {"localhost", 1883};
 };
 
 

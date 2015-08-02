@@ -15,6 +15,7 @@
 #define XBEE_NET_H_
 
 /* Internal Includes */
+#include "Logger.h"
 /* External Includes */
 #include "NetworkingDefs.h"
 /* System Includes */
@@ -69,6 +70,7 @@ public:
 			std::unique_ptr<Networking::Buffer> buffer) throw ();
 private:
 	// Objects
+	Utils::Logger				mLog;
 	XBeeNetContext*				mCtx;
 
 	// Do not copy

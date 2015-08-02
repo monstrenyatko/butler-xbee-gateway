@@ -18,17 +18,18 @@
 #include "Application.h"
 #include "Error.h"
 #include "Thread.h"
+#include "Logger.h"
 /* External Includes */
 /* System Includes */
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
-#include <iostream>
 
 
 ///////////////////// SignalListener /////////////////////
 class SignalListener: private Utils::Thread {
 public:
 	SignalListener():
+		mLog(__FUNCTION__),
 		mSigSet(mIoService, SIGINT, SIGTERM)
 	{
 	}
@@ -42,6 +43,7 @@ public:
 	}
 private:
 	// Objects
+	Utils::Logger									mLog;
 	boost::asio::io_service							mIoService;
 	boost::asio::signal_set							mSigSet;
 
@@ -84,15 +86,14 @@ private:
 				case SIGTERM:
 				{
 					// Signal to stop
-					std::unique_ptr<Utils::Command> cmd (new CommandApplicationStop);
+					std::unique_ptr<Utils::Command> cmd (new CommandApplicationStop("Signal"));
 					Application::get().getProcessor().process(std::move(cmd));
 					boost::system::error_code ec;
 					mSigSet.clear(ec);
 				}
 					break;
 				default:
-					std::cerr<<UTILS_STR_CLASS_FUNCTION(SignalProcessor)
-						<<", not handled signal: "<<sigNumber<<std::endl;
+					*mLog.warn() << UTILS_STR_FUNCTION << ", not handled signal: " << sigNumber;
 					break;
 			}
 		}

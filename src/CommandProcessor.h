@@ -18,6 +18,7 @@
 #include "Thread.h"
 #include "Command.h"
 #include "Semaphore.h"
+#include "Logger.h"
 /* External Includes */
 /* System Includes */
 #include <string>
@@ -53,6 +54,7 @@ public:
 
 private:
 	// Objects
+	Utils::Logger					mLog;
 	std::queue<Command*>			mQueue;
 	Utils::Semaphore				mSem;
 	std::mutex						mMtx;

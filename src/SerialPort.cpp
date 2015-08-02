@@ -23,7 +23,6 @@
 #include "NetworkingDataUnit.h"
 /* External Includes */
 /* System Includes */
-#include <iostream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
@@ -152,25 +151,27 @@ class SerialPortWriter {
 public:
 	SerialPortWriter(SerialPortContext& ctx)
 	throw ():
+		mLog(__FUNCTION__),
 		mPort(*(ctx.port))
 	{}
 
 	void write(std::unique_ptr< std::vector<uint8_t> > data) {
-		std::cout<<UTILS_STR_CLASS_FUNCTION(SerialPortWriter)<<", size: "<<data->size()<<std::endl;
+		*mLog.debug() << UTILS_STR_FUNCTION <<", size: " << data->size();
 		try {
 			try {
 				std::size_t qty = boost::asio::write(mPort, boost::asio::buffer(&((*data)[0]), data->size()));
-				std::cout<<UTILS_STR_CLASS_FUNCTION(SerialPortWriter)<<", written : "<<qty<<std::endl;
+				*mLog.debug() << UTILS_STR_FUNCTION << ", written : " << qty;
 				// TODO: process write`s return value
 			} catch (boost::system::system_error& e) {
 				throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(SerialPortWriter));
 			}
 		} catch (std::exception& e) {
-			std::cerr<<"write, error: "<<e.what()<<std::endl;
+			*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 		}
 	}
 private:
 	// Objects
+	Utils::Logger					mLog;
 	boost::asio::serial_port&		mPort;
 };
 
@@ -200,7 +201,9 @@ private:
 
 ///////////////////// SerialPort /////////////////////
 SerialPort::SerialPort()
-throw ():
+throw ()
+:
+		mLog(__FUNCTION__),
 		mCtx(new SerialPortContext)
 {
 }

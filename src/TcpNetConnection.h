@@ -18,6 +18,7 @@
 #include "NetworkingAddress.h"
 #include "Error.h"
 #include "IdGen.h"
+#include "Logger.h"
 /* External Includes */
 /* System Includes */
 #include <mutex>
@@ -44,6 +45,7 @@ public:
 	void send(std::unique_ptr<Networking::Buffer> buffer);
 private:
 	static Utils::IdGen									mIdGen;
+	Utils::Logger										mLog;
 	std::mutex											mMtx;
 	enum State {
 		STATE_NEW,
