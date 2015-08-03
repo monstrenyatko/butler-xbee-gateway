@@ -30,7 +30,7 @@ class SignalProcessor;
 class XBeeNet;
 class TcpNet;
 class Router;
-class Configuration;
+
 
 class Application {
 public:
@@ -70,7 +70,6 @@ public:
 	XBeeNet&					getXBeeNet() {return *mXBeeNet;}
 	TcpNet&						getTcpNet() {return *mTcpNet;}
 	Router&						getRouter() {return *mRouter;}
-	Configuration&				getConfiguration() {return *mConfiguration;}
 private:
 	// Objects
 	static Application*				mInstance;
@@ -83,7 +82,6 @@ private:
 	XBeeNet*						mXBeeNet;
 	TcpNet*							mTcpNet;
 	Router*							mRouter;
-	Configuration*					mConfiguration;
 
 	// Do not copy
 	Application(const Application&);

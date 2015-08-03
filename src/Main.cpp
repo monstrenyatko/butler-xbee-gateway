@@ -15,6 +15,7 @@
 #include "Application.h"
 #include "Logger.h"
 #include "LogManager.h"
+#include "Configuration.h"
 /* External Includes */
 /* System Includes */
 
@@ -22,16 +23,18 @@
 int main(int argc, char* argv[]) {
 	Utils::Logger log("Main");
 	try {
+		*log.info() << "START";
+		Utils::Configuration::get().load();
+		Utils::Configuration::get().dump();
 		Application::initialize();
-		//testThread.start();
 		Application::get().run();
-		//testThread.stop();
 		Application::destroy();
 	} catch (std::exception& e) {
 		*log.error() << e.what();
 	}
 	*log.info() << "EXIT";
 	// It was the last log => flush everything in logger
+	Utils::Configuration::destroy();
 	Utils::LogManager::destroy();
 	return 0;
 }

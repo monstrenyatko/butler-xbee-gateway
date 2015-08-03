@@ -222,8 +222,8 @@ throw (Utils::Error)
 		try {
 			// Prepare
 			mCtx->port.reset(new boost::asio::serial_port(mCtx->ioService));
-			mCtx->portName = Application::get().getConfiguration().serial.name;
-			mCtx->portBaud = Application::get().getConfiguration().serial.baud;
+			mCtx->portName = Utils::Configuration::get().serial.name;
+			mCtx->portBaud = Utils::Configuration::get().serial.baud;
 			mCtx->portReader.reset(new SerialPortReader(*mCtx));
 			mCtx->portWriter.reset(new SerialPortWriter(*mCtx));
 			mCtx->port->open(mCtx->portName);

@@ -13,6 +13,7 @@
 
 /* Internal Includes */
 #include "LogManager.h"
+#include "Configuration.h"
 /* External Includes */
 /* System Includes */
 #include <boost/date_time.hpp>
@@ -69,36 +70,58 @@ throw ()
 
 LogManager::LogManager()
 :
-	mStream(std::cout.rdbuf())
+	mOsDef(std::cout.rdbuf()),
+	mOsErr(std::cerr.rdbuf())
 {
-
 }
 
 LogManager::~LogManager()
 throw (Utils::Error)
 {
 	try {
-		mStream.flush();
+		mOsDef.flush();
+		mOsErr.flush();
 	} catch (std::exception& e) {
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(LoggerManager));
 	}
 }
 
 void LogManager::log(LoggerLevel::Type logLevel, const std::string& name, const std::string& value) {
-	std::lock_guard<std::mutex> locker(mMtx);
-	// Format string
-	std::stringstream ss;
-	ss
-	<< LOG_MANAGER_LINE_PREFIX
-	<< putTime
-	<< LOG_MANAGER_LINE_DELIMITER
-	<< boost::format("[%-5s]") % LoggerLevel::toString(logLevel)
-	<< " : "
-	<< name
-	<< LOG_MANAGER_LINE_DELIMITER
-	<< value;
-	// Output
-	mStream << ss.str() << std::endl;
+	LoggerLevel::Type currentLevel = LoggerLevel::TRACE;
+	try {
+		currentLevel = Utils::Configuration::get().logger.level;
+	} catch (std::exception& e) {
+		log(currentLevel, logLevel, "LogManager", UTILS_STR_FUNCTION + ", error: " + e.what());
+	}
+	log(currentLevel, logLevel, name, value);
+}
+
+void LogManager::log(LoggerLevel::Type logLevelCurrent, LoggerLevel::Type logLevel,
+						const std::string& name, const std::string& value)
+{
+	if (logLevelCurrent >= logLevel) {
+		std::lock_guard<std::mutex> locker(mMtx);
+		// Format string
+		std::stringstream ss;
+		ss
+		<< LOG_MANAGER_LINE_PREFIX
+		<< putTime
+		<< LOG_MANAGER_LINE_DELIMITER
+		<< boost::format("[%-5s]") % LoggerLevel::toString(logLevel)
+		<< " : "
+		<< name
+		<< LOG_MANAGER_LINE_DELIMITER
+		<< value;
+		// Output
+		getOs(logLevel) << ss.str() << std::endl;
+	}
+}
+
+std::ostream& LogManager::getOs(LoggerLevel::Type logLevel) {
+	switch (logLevel) {
+		case LoggerLevel::ERROR:	return mOsErr;
+		default:					return mOsDef;
+	}
 }
 
 } /* namespace Utils */

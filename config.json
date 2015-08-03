@@ -1,4 +1,7 @@
 {
+	"logger":{
+		"level":"TRACE"
+	},
 	"serial":{
 		"name":"/dev/tty.usbserial-AH031GNH",
 		"baud": 57600

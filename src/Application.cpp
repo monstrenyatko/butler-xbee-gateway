@@ -19,7 +19,6 @@
 #include "XBeeNet.h"
 #include "TcpNet.h"
 #include "Router.h"
-#include "Configuration.h"
 /* External Includes */
 /* System Includes */
 
@@ -62,10 +61,8 @@ throw (Utils::Error)
 	mSerial(NULL),
 	mXBeeNet(NULL),
 	mTcpNet(NULL),
-	mRouter(NULL),
-	mConfiguration(NULL)
+	mRouter(NULL)
 {
-	std::unique_ptr<Configuration> ptrConfiguration;
 	std::unique_ptr<Utils::CommandProcessor> ptrProcessor;
 	std::unique_ptr<SignalProcessor> ptrSignalProcessor;
 	std::unique_ptr<SerialPort> ptrSerial;
@@ -76,7 +73,6 @@ throw (Utils::Error)
 	// initialize objects in exception-save mode
 	try {
 		*mLog.info() << "INITIALIZATION";
-		ptrConfiguration.reset(new Configuration());
 		ptrProcessor.reset(new Utils::CommandProcessor);
 		ptrSignalProcessor.reset(new SignalProcessor);
 		ptrSerial.reset(new SerialPort());
@@ -94,7 +90,6 @@ throw (Utils::Error)
 	mXBeeNet = ptrXBeeNet.release();
 	mTcpNet = ptrTcpNet.release();
 	mRouter = ptrRouter.release();
-	mConfiguration = ptrConfiguration.release();
 }
 
 Application::~Application()
@@ -122,7 +117,6 @@ throw (Utils::Error)
 		delete mSerial;
 		delete mSignalProcessor;
 		delete mProcessor;
-		delete mConfiguration;
 	} catch (std::exception& e) {
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
 	}

@@ -113,8 +113,8 @@ void Router::onProcess(std::unique_ptr<Networking::DataUnit> unit) {
 					}
 					Networking::AddressTcp to(
 						{
-							Application::get().getConfiguration().tcp.address,
-							Application::get().getConfiguration().tcp.port
+							Utils::Configuration::get().tcp.address,
+							Utils::Configuration::get().tcp.port
 						}
 					);
 					Application::get().getTcpNet().send(u->getFrom(), &to, u->popData());

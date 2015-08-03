@@ -15,6 +15,7 @@
 #define LOGGER_LEVEL_H_
 
 /* Internal Includes */
+#include "Error.h"
 /* External Includes */
 /* System Includes */
 #include <string>
@@ -41,6 +42,18 @@ struct LoggerLevel {
 			case TRACE:		return "TRACE";
 			default:		return "UNKNW";
 		}
+	}
+
+	static LoggerLevel::Type fromString(const std::string& logLevel)
+	throw (Utils::Error)
+	{
+		if		(logLevel == "ERROR") return ERROR;
+		else if	(logLevel == "WARN") return WARN;
+		else if	(logLevel == "INFO") return INFO;
+		else if	(logLevel == "DEBUG") return DEBUG;
+		else if	(logLevel == "TRACE") return TRACE;
+		else throw Utils::Error(UTILS_STR_CLASS_FUNCTION(LoggerLevel)
+				+ ", wrong value [" + logLevel + "]");
 	}
 };
 

@@ -15,13 +15,13 @@
 #define LOG_MANAGER_H_
 
 /* Internal Includes */
-#include "Logger.h"
+#include "LoggerLevel.h"
 #include "Error.h"
 /* External Includes */
 /* System Includes */
-#include <ostream>
 #include <mutex>
 #include <string>
+#include <ostream>
 
 namespace Utils {
 
@@ -51,7 +51,8 @@ private:
 	static LogManager*			mInstance;
 	static std::mutex			mMtxInstance;
 	std::mutex					mMtx;
-	std::ostream				mStream;
+	std::ostream				mOsDef;
+	std::ostream				mOsErr;
 
 	/**
 	 * Constructor
@@ -62,6 +63,14 @@ private:
 	 * Destructor
 	 */
 	~LogManager() throw (Utils::Error);
+
+	void log(LoggerLevel::Type logLevelCurrent, LoggerLevel::Type logLevel,
+							const std::string& name, const std::string& value);
+	std::ostream& getOs(LoggerLevel::Type logLevel);
+
+	// Do not copy
+	LogManager(const LogManager&);
+	LogManager &operator=(const LogManager&);
 };
 
 } /* namespace Utils */
