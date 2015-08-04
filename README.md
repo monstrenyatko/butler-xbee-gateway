@@ -3,25 +3,31 @@ XBEE GATEWAY
 
 About
 =====
-- It is a gateway between XBee® ZB and TCP network.
-- Gateway assumes that sensor uses MQTT (http://mqtt.org) protocol over XBee.
-- MQTT traffic is routed to TCP socket of the public MQTT server (test.mosquitto.org:1883).
-- Gateway maintains separate TCP connection for each sensor.
+- It is a gateway between `XBee® ZigBee` and `TCP` network.
+- Gateway extracts data from `XBee® ZigBee` frames and sends to the `TCP` Server.
+- Gateway maintains separate `TCP` connection for each `XBee® ZigBee` device.
 
-XBee Network
-============
-- Install XCTU (`http://www.digi.com/products/wireless-wired-embedded-solutions/zigbee-rf-modules/xctu`).
-- Use XCTU for installing the firmware to the XBee devices.
-- XBee® ZB network must have only one coordinator.
+In default configuration/example:
+- Gateway assumes that sensor uses `MQTT`(http://mqtt.org) protocol over `XBee® ZigBee`.
+- `MQTT` traffic is routed to `TCP` socket of the configured `MQTT` broker.
+- `Arduino` board is used as sensor (See https://github.com/monstrenyatko/ArduinoMqttNode)
 
-XBee Coordinator
-----------------
+XBee® ZigBee Network
+====================
+- Install `XCTU`(http://www.digi.com/products/wireless-wired-embedded-solutions/zigbee-rf-modules/xctu).
+- Use `XCTU` for installing the firmware to the `XBee®` devices.
+- `XBee® ZigBee` network must have only one `Coordinator`.
+- `XBee® ZigBee Coordinator` must be connected to the `PC` were you plan to run the application.
+- All other devices in the network must be `XBee® ZigBee End Device` or `XBee® ZigBee Router`.
+
+XBee® ZigBee Coordinator
+------------------------
 - Coordinator must have the firmware with `ZigBee Coordinator API` functional set.
 - Use XCTU to set `AP` (API mode) option to 0x2 (escapes).
-- Use XCTU to set `BD` (Baud Rate) to 57600.
+- Use XCTU to set `BD` (Baud Rate) to `57600`.
 
-XBee End Devices and Routers
-----------------------------
+XBee® ZigBee End Device and XBee® ZigBee Router
+-----------------------------------------------
 - Devices must have the firmware with `ZigBee End Device` or `ZigBee Router` functional set.
 - Use XCTU to set `PAN ID`. It must be equal with Coordinator.
 - Use XCTU to set `DH` and `DL` to 0x0 (send data to Coordinator).
@@ -31,15 +37,15 @@ Prepare build environment
 
 Cmake
 -----
-Install Cmake (http://www.cmake.org) with version 2.8 or later.
+Install `Cmake`(http://www.cmake.org) with version `2.8` or later.
 
 C++
 ---
-Install the compiler with C++11 support.
+Install the compiler with `C++11` support.
 
 Boost
 -----
-Install Boost (http://www.boost.org) library with version 1.45 or later.
+Install `Boost`(http://www.boost.org) library with version `1.45` or later.
 
 Building
 ========
@@ -54,7 +60,7 @@ mkdir build
 ```sh
 cd build
 ```
-- Use `cmake` to prepare the build:
+- Use `Cmake` to prepare the build:
 ```sh
 cmake <path to sources>
 ```
@@ -65,7 +71,7 @@ make
 - The resulting binary file is located in `<build directory>/bin/`
 
 UNIX like OS + Eclipse
--------------------------
+----------------------
 - Create a `build directory` for out of source compilation:
 ```sh
 mkdir build
@@ -83,9 +89,83 @@ cmake -G"Eclipse CDT4 - Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug <path to sourc
 
 Configuration
 =============
-To be implemented
+Configuration file is done in `JSON`(http://www.json.org) format.
+######Example:
+```json
+{
+	"logger":{
+		"level":"TRACE"
+	},
+	"serial":{
+		"name":"/dev/usbserial",
+		"baud": 57600
+	},
+	"tcp":{
+		"address":"test.mosquitto.org",
+		"port": 1883
+	}
+}
+```
+
+Logger
+------
+Application logger settings.
+##### Block name
+`logger`
+##### Parameters:
+###### level (String)
+Set verbose level.
+<table>
+	<tr>
+		<td><b>Value</b></td>
+		<td><b>Description</b></td>
+	</tr>
+	<tr>
+		<td>"ERROR"</td>
+		<td>Prints only errors</td>
+	</tr>
+	<tr>
+		<td>"WARN"</td>
+		<td>ERROR level + warnings</td>
+	</tr>
+	<tr>
+		<td>"INFO"</td>
+		<td>WARN level + processing information</td>
+	</tr>
+	<tr>
+		<td>"DEBUG"</td>
+		<td>INFO level + debug information</td>
+	</tr>
+	<tr>
+		<td>"TRACE"</td>
+		<td>DEBUG level + messages content</td>
+	</tr>
+</table>
+
+Serial
+------
+Serial port settings.
+##### Block name
+`serial`
+##### Parameters:
+###### name (String)
+Path to serial port device like `"/dev/usbserial"`.
+###### baud (Number)
+Serial port baud rate like `57600`.
+
+TCP
+---
+`TCP` connection settings.
+##### Block name
+`tcp`
+##### Parameters:
+###### address (String)
+Server address like `"test.mosquitto.org"`
+###### port (Number)
+Server port like `1883`
 
 Usage
 =====
-- Connect XBee Coordinator to PC where the XBeeGateway is installed.
-- Launch the XBeeGateway.
+- Connect `XBee® ZigBee Coordinator` to PC where the application is installed.
+- Launch the application.
+- Do not forget to power ON all nodes with `XBee® ZigBee` wireless interfaces.
