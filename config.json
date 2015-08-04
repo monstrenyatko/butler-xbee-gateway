@@ -3,7 +3,7 @@
 		"level":"TRACE"
 	},
 	"serial":{
-		"name":"/dev/tty.usbserial-AH031GNH",
+		"name":"/dev/tty.usbserial-A94FR19P",
 		"baud": 57600
 	},
 	"tcp":{

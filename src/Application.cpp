@@ -37,9 +37,15 @@ throw (Utils::Error)
 void Application::destroy()
 throw (Utils::Error)
 {
-	Application* tmp = mInstance;
-	mInstance = NULL;
-	delete tmp;
+	try {
+		delete mInstance;
+	} catch (Utils::Error& e) {
+		mInstance = NULL;
+		throw e;
+	} catch (std::exception& e) {
+		mInstance = NULL;
+		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
+	}
 }
 
 Application& Application::get()
