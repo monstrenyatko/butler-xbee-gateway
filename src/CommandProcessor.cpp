@@ -21,15 +21,16 @@
 
 namespace Utils {
 
-CommandProcessor::CommandProcessor()
+CommandProcessor::CommandProcessor(const std::string& name)
 :
-	mLog(__FUNCTION__),
+	Utils::Thread(name + "-CmP"),
+	mLog(getName()),
 	mSem(0, 1)
 {
 }
 
 CommandProcessor::~CommandProcessor() throw () {
-	stop();
+	_stop();
 	while (!mQueue.empty()) {
 		delete mQueue.front();
 		mQueue.pop();
@@ -37,11 +38,17 @@ CommandProcessor::~CommandProcessor() throw () {
 }
 
 void CommandProcessor::stop(void) {
+	*mLog.debug() << UTILS_STR_FUNCTION;
+	_stop();
+}
+
+void CommandProcessor::_stop(void) {
 	Utils::Thread::stop();
 }
 
 void CommandProcessor::start(void)
 {
+	*mLog.debug() << UTILS_STR_FUNCTION;
 	Utils::Thread::start();
 }
 
@@ -71,6 +78,7 @@ void CommandProcessor::loop(void)
 		}
 		mMtx.unlock();
 	}
+	*mLog.debug() << UTILS_STR_FUNCTION << ", done";
 }
 
 void CommandProcessor::process(std::unique_ptr<Command> command)

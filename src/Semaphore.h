@@ -29,6 +29,13 @@ namespace Utils {
  */
 class Semaphore {
 public:
+	struct Status {
+		typedef enum {
+			OK,
+			TIME_OUT,
+			QTY
+		} Type;
+	};
 	/**
 	 * Constructor.
 	 *
@@ -41,6 +48,13 @@ public:
 	 * If counter is not zero Decrements semaphore or Blocks the caller otherwise.
 	 */
 	void wait();
+
+	/**
+	 * If counter is not zero Decrements semaphore or Blocks the caller otherwise.
+	 *
+	 * @param timeOut the maximum period of time to wait the counter.
+	 */
+	Status::Type wait(uint32_t timeOut);
 
 	/**
 	 * If counter is not zero Decrements semaphore or returns immediately wo blocking the caller otherwise.

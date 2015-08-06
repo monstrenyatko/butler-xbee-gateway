@@ -19,8 +19,10 @@
 
 namespace Utils {
 
-Thread::Thread() :
-		mIsAlive(false)
+Thread::Thread(const std::string& name)
+:
+	mName(name),
+	mIsAlive(false)
 {
 }
 
@@ -32,7 +34,7 @@ void Thread::start(void) {
 	if (mIsAlive.compare_exchange_strong(expected, true)) {
 		onStart();
 		// start loop
-		mWorker = std::thread(std::bind(&Thread::loop, this));
+		mWorker = std::thread(&Thread::loop, this);
 		// loop is started
 		onStarted();
 	}

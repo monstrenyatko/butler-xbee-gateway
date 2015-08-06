@@ -28,6 +28,7 @@
 ///////////////////// RouterContext /////////////////////
 struct RouterContext {
 	Utils::CommandProcessor							processor;
+	RouterContext(const std::string& name) : processor(name) {}
 };
 
 ///////////////////// RouterCommands /////////////////////
@@ -57,7 +58,7 @@ private:
 Router::Router()
 :
 	mLog(__FUNCTION__),
-	mCtx(new RouterContext)
+	mCtx(new RouterContext(mLog.getName()))
 {}
 
 Router::~Router() {

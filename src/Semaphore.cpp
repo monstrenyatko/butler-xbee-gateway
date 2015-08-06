@@ -32,6 +32,17 @@ void Semaphore::wait()
 	mCount--;
 }
 
+Semaphore::Status::Type Semaphore::wait(uint32_t timeOut)
+{
+	std::unique_lock<std::mutex> locker(mMtx);
+	Status::Type res = Status::TIME_OUT;
+	if (mCond.wait_for(locker, std::chrono::milliseconds(timeOut), [this]{ return mCount > 0; })) {
+		mCount--;
+		res = Status::OK;
+	}
+	return res;
+}
+
 bool Semaphore::try_wait()
 {
 	std::lock_guard<std::mutex> locker(mMtx);

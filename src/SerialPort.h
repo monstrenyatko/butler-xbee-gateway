@@ -24,9 +24,11 @@
 #include <vector>
 #include <memory>
 
-
 /* Forward declaration */
 struct SerialPortContext;
+class SerialPortCommandClosed;
+class SerialPortCommandWrite;
+
 
 class SerialPort {
 public:
@@ -55,7 +57,7 @@ public:
 	 *
 	 * @param buffer data to be written
 	 */
-	void  write(std::unique_ptr< std::vector<uint8_t> > buffer) throw ();
+	void write(std::unique_ptr< std::vector<uint8_t> > buffer) throw ();
 private:
 	// Objects
 	Utils::Logger					mLog;
@@ -66,6 +68,14 @@ private:
 	SerialPort &operator=(const SerialPort&);
 
 	// Internal
+	void onWrite(std::unique_ptr< std::vector<uint8_t> >) throw ();
+	bool onOpen() throw ();
+	void onClosed(const std::string& cause) throw ();
+
+	void startOpener() throw ();
+
+	friend class SerialPortCommandClosed;
+	friend class SerialPortCommandWrite;
 };
 
 #endif /* SERIAL_PORT_H_ */

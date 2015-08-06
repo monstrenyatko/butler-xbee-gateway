@@ -29,6 +29,16 @@
 ///////////////////// TcpNetIoService /////////////////////
 class TcpNetIoService: private Utils::Thread {
 public:
+	TcpNetIoService()
+	:
+		Utils::Thread(__FUNCTION__),
+		mLog(getName())
+	{}
+
+	~TcpNetIoService() {
+		stop();
+	}
+
 	void start(void) {
 		Utils::Thread::start();
 	}
@@ -40,6 +50,7 @@ public:
 	boost::asio::io_service& getIoService() {return mIoService;}
 private:
 	// Objects
+	Utils::Logger									mLog;
 	boost::asio::io_service							mIoService;
 
 	// Methods
@@ -48,14 +59,15 @@ private:
 	}
 
 	void loop() {
+		boost::asio::io_service::work work(getIoService());
 		while (isAlive()) {
-			try {
-				mIoService.reset();
-				mIoService.run();
-			} catch (boost::system::system_error& e) {
+			boost::system::error_code ec;
+			getIoService().reset();
+			if (!getIoService().run(ec)) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 		}
+		*mLog.debug() << UTILS_STR_FUNCTION << ", done";
 	}
 };
 
@@ -64,6 +76,7 @@ struct TcpNetContext {
 	Utils::CommandProcessor							processor;
 	TcpNetIoService									ioService;
 	TcpNetDb										db;
+	TcpNetContext(const std::string& name) : processor(name) {}
 };
 
 ///////////////////// TcpNetCommands /////////////////////
@@ -97,7 +110,7 @@ private:
 TcpNet::TcpNet()
 :
 	mLog(__FUNCTION__),
-	mCtx(new TcpNetContext)
+	mCtx(new TcpNetContext(mLog.getName()))
 {
 }
 
@@ -111,8 +124,8 @@ void TcpNet::start() {
 }
 
 void TcpNet::stop() {
-	mCtx->ioService.stop();
 	mCtx->processor.stop();
+	mCtx->ioService.stop();
 }
 
 void TcpNet::send(const Networking::Address* from, const Networking::Address* to,

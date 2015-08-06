@@ -30,13 +30,4 @@ private:
 	std::string		mReason;
 };
 
-class CommandSerialClose: public Utils::Command {
-public:
-	CommandSerialClose(const std::string& cause)
-	: mCause(cause) {};
-	void execute();
-private:
-	std::string		mCause;
-};
-
 #endif /* COMMANDS_H_ */

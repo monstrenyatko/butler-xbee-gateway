@@ -29,9 +29,13 @@
 class SignalListener: private Utils::Thread {
 public:
 	SignalListener():
-		mLog(__FUNCTION__),
+		Utils::Thread(__FUNCTION__),
+		mLog(getName()),
 		mSigSet(mIoService, SIGINT, SIGTERM)
-	{
+	{}
+
+	~SignalListener() {
+		stop();
 	}
 
 	void start(void) {
@@ -66,14 +70,15 @@ private:
 	}
 
 	void loop() {
+		boost::asio::io_service::work work(mIoService);
 		while (isAlive()) {
-			try {
-				mIoService.reset();
-				mIoService.run();
-			} catch (boost::system::system_error& e) {
+			boost::system::error_code ec;
+			mIoService.reset();
+			if (!mIoService.run(ec)) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 		}
+		*mLog.debug() << UTILS_STR_FUNCTION << ", done";
 	}
 
 	void onSignal(const boost::system::error_code& error, int sigNumber)

@@ -19,6 +19,7 @@
 /* External Includes */
 /* System Includes */
 #include <thread>
+#include <string>
 
 
 namespace Utils {
@@ -26,11 +27,18 @@ namespace Utils {
 class Thread {
 public:
 	virtual ~Thread();
+
+	/**
+	 * Get the thread name
+	 *
+	 * @return string with name
+	 */
+	const std::string& getName() const {return mName;}
 protected:
 	/**
 	 * Please inherit
 	 */
-	Thread();
+	Thread(const std::string& name);
 	/**
 	 * Starts the thread
 	 */
@@ -45,12 +53,13 @@ protected:
 	 * Check if thread could be working.
 	 * See loop() function.
 	 *
-	 * @returns true  - if thread started;
-	 *          false - if thread is not started or must be stopped;
+	 * @return true  - if thread started;
+	 *         false - if thread is not started or must be stopped;
 	 */
 	bool isAlive() {return mIsAlive;}
 private:
 	// Objects
+	std::string						mName;
 	Utils::atomic_bool				mIsAlive;
 	std::thread						mWorker;
 

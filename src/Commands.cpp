@@ -14,17 +14,10 @@
 /* Internal Includes */
 #include "Commands.h"
 #include "Application.h"
-#include "CommandProcessor.h"
 /* External Includes */
 /* System Includes */
 
 
 void CommandApplicationStop::execute() {
 	Application::get().stop(mReason);
-}
-
-void CommandSerialClose::execute() {
-	// stop
-	std::unique_ptr<Utils::Command> cmd (new CommandApplicationStop("Serial: " + mCause));
-	Application::get().getProcessor().process(std::move(cmd));
 }

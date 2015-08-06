@@ -175,6 +175,7 @@ public:
 struct XBeeNetContext {
 	Utils::CommandProcessor							processor;
 	std::unique_ptr<XBeeNetFromBuffer>				fromBuffer;
+	XBeeNetContext(const std::string& name) : processor(name) {}
 };
 
 ///////////////////// XBeeNetCommands /////////////////////
@@ -229,7 +230,7 @@ private:
 XBeeNet::XBeeNet()
 :
 	mLog(__FUNCTION__),
-	mCtx(new XBeeNetContext)
+	mCtx(new XBeeNetContext(mLog.getName()))
 {
 	mCtx->fromBuffer.reset(new XBeeNetFromBuffer( [this] (std::unique_ptr<XBeeBuffer> a) {
 		onFrame(std::move(a));

@@ -33,7 +33,7 @@ namespace Utils {
  */
 class CommandProcessor: private Utils::Thread {
 public:
-	CommandProcessor();
+	CommandProcessor(const std::string&);
 
 	~CommandProcessor() throw ();
 
@@ -66,6 +66,7 @@ private:
 	// Internal
 	void onStop();
 	void loop();
+	void _stop(void);
 };
 
 } /* namespace Utils */

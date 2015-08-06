@@ -41,7 +41,7 @@ throw (Utils::Error)
 		delete mInstance;
 	} catch (Utils::Error& e) {
 		mInstance = NULL;
-		throw e;
+		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
 	} catch (std::exception& e) {
 		mInstance = NULL;
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
@@ -79,7 +79,7 @@ throw (Utils::Error)
 	// initialize objects in exception-save mode
 	try {
 		*mLog.info() << "INITIALIZATION";
-		ptrProcessor.reset(new Utils::CommandProcessor);
+		ptrProcessor.reset(new Utils::CommandProcessor(mLog.getName()));
 		ptrSignalProcessor.reset(new SignalProcessor);
 		ptrSerial.reset(new SerialPort());
 		ptrXBeeNet.reset(new XBeeNet());
@@ -152,6 +152,6 @@ void Application::run() throw () {
 }
 
 void Application::stop(const std::string& reason) throw () {
-	*mLog.info() << UTILS_STR_FUNCTION << ", reason: " << reason;
+	*mLog.debug() << UTILS_STR_FUNCTION << ", reason: " << reason;
 	mSem.post();
 }
