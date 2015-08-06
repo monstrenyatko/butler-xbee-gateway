@@ -13,8 +13,6 @@
 
 /* Internal Includes */
 #include "SignalProcessor.h"
-#include "CommandProcessor.h"
-#include "Commands.h"
 #include "Application.h"
 #include "Error.h"
 #include "Thread.h"
@@ -83,23 +81,27 @@ private:
 
 	void onSignal(const boost::system::error_code& error, int sigNumber)
 	{
-		if (error==boost::asio::error::operation_aborted) {
+		if (error == boost::asio::error::operation_aborted) {
 			// Signal set is cancelled
 		} else {
+			*mLog.debug() << UTILS_STR_FUNCTION << ", value: " << sigNumber;
+			bool reschedule = true;
 			switch(sigNumber) {
 				case SIGINT:
 				case SIGTERM:
 				{
+					// Do not catch signals anymore
+					reschedule = false;
 					// Signal to stop
-					std::unique_ptr<Utils::Command> cmd (new CommandApplicationStop("Signal"));
-					Application::get().getProcessor().process(std::move(cmd));
-					boost::system::error_code ec;
-					mSigSet.clear(ec);
+					Application::get().stop("Signal to stop");
 				}
 					break;
 				default:
-					*mLog.warn() << UTILS_STR_FUNCTION << ", not handled signal: " << sigNumber;
+					*mLog.warn() << UTILS_STR_FUNCTION << ", not handled, value: " << sigNumber;
 					break;
+			}
+			if (reschedule) {
+				schedule();
 			}
 		}
 	}

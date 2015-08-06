@@ -17,7 +17,6 @@
 #include "Thread.h"
 #include "Semaphore.h"
 #include "CommandProcessor.h"
-#include "Commands.h"
 #include "Configuration.h"
 #include "Error.h"
 #include "Application.h"
