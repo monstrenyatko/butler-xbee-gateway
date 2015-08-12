@@ -87,6 +87,35 @@ cmake -G"Eclipse CDT4 - Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug <path to sourc
 - Import the project from the `build directory` (`File -> Import -> General -> Existing Projects into Workspace`)
 - Use `Project -> Build Project` to start the build process
 
+Raspberry Pi (cross compilation)
+--------------------------------
+- Download or build your own `GCC` based toolchain for `ARM Linux` with hardware floating point support.
+<br/>See http://crosstool-ng.org
+- Install all dependencies to the `rootfs` in toolchain.
+- Create a `build directory` for out of source compilation:
+```sh
+mkdir build
+```
+- Go to the `build directory`:
+```sh
+cd build
+```
+- Configure environment:
+```sh
+export RASPBERRY_PI_TOOLCHAIN_PREFIX=arm-raspberry-linux-gnueabihf-
+export RASPBERRY_PI_TOOLCHAIN=$HOME/raspberrypi/toolchain
+export RASPBERRY_PI_ROOTFS=$HOME/raspberrypi/rootfs
+```
+- Use `Cmake` to prepare the build:
+```sh
+cmake -D CMAKE_TOOLCHAIN_FILE=build/cmake/Toolchain/raspberrypi.cmake <path to sources>
+```
+- Use `make` to start the build process:
+```sh
+make
+```
+- The resulting binary file is located in `<build directory>/bin/`
+
 Configuration
 =============
 Configuration file is done in `JSON`(http://www.json.org) format.

@@ -14,6 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #******************** Find Libs *******************
 #**** Boost ****
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.45.0 REQUIRED COMPONENTS system date_time)
 if (NOT Boost_FOUND)
 	MESSAGE(FATAL_ERROR "Boost are not found")
