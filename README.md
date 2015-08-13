@@ -9,11 +9,27 @@ About
 
 In default configuration/example:
 - Gateway assumes that sensor uses `MQTT`(http://mqtt.org) protocol over `XBee® ZigBee`.
-- `MQTT` traffic is routed to `TCP` socket of the configured `MQTT` broker.
+- `MQTT` traffic is routed to `TCP` socket of the configured `MQTT Broker`.
 - `Arduino` board is used as sensor (See https://github.com/monstrenyatko/ArduinoMqttNode)
 
-XBee® ZigBee Network
-====================
+Purpose
+=======
+Usually microcontrollers like `Arduino` doesn't have network stack.
+If you use a `MQTT` library to communicate with broker you still need network stack.
+The only way to communicate with world is a `Serial`. `Serial` is simple and really popular.
+A lot of RF modules do work via `Serial` interface.
+Unfortunately on other side you get `Serial` as well in case of `XBee® ZigBee`.
+`MQTT` broker doesn't support `Serial` connection directly and we need to pack data from `Serial` to `TCP`:<br/>
+	`Arduino` --> `Serial` --> `RF` <---z---> `RF` --> `Serial` --> `XBeeGateway` --> `TCP` --> `MQTT Broker`
+
+Usage
+=====
+- Connect `XBee® ZigBee Coordinator` to PC where the application is installed.
+- Launch the application.
+- Do not forget to power ON all nodes with `XBee® ZigBee` wireless interfaces.
+
+XBee® ZigBee Network Configuration
+==================================
 - Install `XCTU`(http://www.digi.com/products/wireless-wired-embedded-solutions/zigbee-rf-modules/xctu).
 - Use `XCTU` for installing the firmware to the `XBee®` devices.
 - `XBee® ZigBee` network must have only one `Coordinator`.
@@ -192,9 +208,3 @@ TCP
 Server address like `"test.mosquitto.org"`
 ###### port (Number)
 Server port like `1883`
-
-Usage
-=====
-- Connect `XBee® ZigBee Coordinator` to PC where the application is installed.
-- Launch the application.
-- Do not forget to power ON all nodes with `XBee® ZigBee` wireless interfaces.
