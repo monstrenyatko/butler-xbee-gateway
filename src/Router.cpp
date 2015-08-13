@@ -118,6 +118,7 @@ void Router::onProcess(std::unique_ptr<Networking::DataUnit> unit) {
 							Utils::Configuration::get().tcp.port
 						}
 					);
+					*mLog.info() << u->getFrom()->toString() << " -> " << to.toString();
 					Application::get().getTcpNet().send(u->getFrom(), &to, u->popData());
 				}
 					break;
@@ -127,6 +128,7 @@ void Router::onProcess(std::unique_ptr<Networking::DataUnit> unit) {
 					if (!u) {
 						throw Utils::Error("Wrong unit type");
 					}
+					*mLog.info() << u->getFrom()->toString() << " -> " << u->getTo()->toString();
 					Application::get().getXBeeNet().to(u->getFrom(), u->getTo(), u->popData());
 				}
 					break;

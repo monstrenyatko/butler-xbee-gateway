@@ -171,6 +171,7 @@ void TcpNetConnection::cancel() {
 }
 
 void TcpNetConnection::destroy() {
+	*mLog.info() << "Destroying, " << mFrom->toString() << " <-> " << mTo->toString();
 	setState(STATE_DESTROYING);
 	cancel();
 	std::unique_ptr<Utils::Command> cmd

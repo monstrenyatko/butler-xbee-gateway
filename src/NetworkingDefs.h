@@ -19,6 +19,7 @@
 /* System Includes */
 #include <vector>
 #include <stdint.h>
+#include <ostream>
 
 namespace Networking {
 
@@ -35,6 +36,20 @@ namespace Origin {
 		// from TCP network
 		TCP
 	};
+
+	inline std::string toString(Type type) {
+		switch (type) {
+			case SERIAL:			return "SERIAL";
+			case XBEE:				return "XBEE";
+			case XBEE_ENCODER:		return "XBEE_ENCODER";
+			case TCP:				return "TCP";
+			default:				return "UNKNW";
+		}
+	}
+
+	inline std::ostream& operator<<(std::ostream& os, Type obj) {
+		return os << toString(obj);
+	}
 }
 
 } /* namespace Networking */

@@ -157,6 +157,7 @@ void TcpNet::onSend(std::unique_ptr<Networking::Address> from, std::unique_ptr<N
 	try {
 		TcpNetConnection* connection = mCtx->db.get(*from, *to);
 		if (!connection) {
+			*mLog.info() << "Connecting, " << from->toString() << " <-> " << to->toString();
 			// prepare parameters
 			std::unique_ptr<Networking::AddressTcp> to_ =
 					Utils::dynamic_unique_ptr_cast<Networking::AddressTcp, Networking::Address>(to);

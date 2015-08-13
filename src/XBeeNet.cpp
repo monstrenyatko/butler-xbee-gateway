@@ -74,7 +74,7 @@ public:
 						mBuffer->push_back(DO_API_ESCPE(b));
 						continue;
 					default:
-						*mLog.error() << UTILS_STR_FUNCTION << ", bad Escape";
+						*mLog.warn() << UTILS_STR_FUNCTION << ", bad Escape";
 						drop();
 						continue;
 				}
@@ -85,7 +85,7 @@ public:
 					mIsEscapeSequence = true;
 					continue;
 				case API_START_DELIM:
-					*mLog.error() << UTILS_STR_FUNCTION << ", unexpected start of next frame";
+					*mLog.warn() << UTILS_STR_FUNCTION << ", unexpected start of next frame";
 					drop();
 					// no break
 				default:
