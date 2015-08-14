@@ -141,7 +141,7 @@ Configuration file is done in `JSON`(http://www.json.org) format.
 ```json
 {
 	"logger":{
-		"level":"TRACE"
+		"level":"INFO"
 	},
 	"serial":{
 		"name":"/dev/usbserial",
