@@ -31,7 +31,7 @@ public:
 	/**
 	 * Gets the instance
 	 */
-	static const Configuration& get() throw (Utils::Error);
+	static Configuration& get() throw (Utils::Error);
 
 	/**
 	 * Destroy the instance If available
@@ -47,6 +47,10 @@ public:
 	 * Log the current configuration
 	 */
 	void dump() const;
+
+	struct Main {
+		std::string		configFileName;
+	} main = {"config.json"};
 
 	struct Logger {
 		LoggerLevel::Type	level;

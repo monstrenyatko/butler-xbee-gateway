@@ -23,8 +23,6 @@
 
 namespace Utils {
 
-#define CONFIG_FILE		"config.json"
-
 Configuration*			ConfigurationImpl::mInstance = NULL;
 std::mutex				ConfigurationImpl::mMtxInstance;
 Utils::Logger			ConfigurationImpl::mLog("Configuration");
@@ -55,7 +53,7 @@ throw ()
 			delete tmp;
 		}
 	} catch (std::exception& e) {
-		// It mast not happen
+		// It must not happen
 		// We can't use logger When the instance is destroyed => ignore
 	}
 }
@@ -64,10 +62,10 @@ void ConfigurationImpl::load()
 throw (Utils::Error)
 {
 	try {
-		*ConfigurationImpl::mLog.info() << "Loading from file, path: " << CONFIG_FILE;
+		*ConfigurationImpl::mLog.info() << "Loading from file, path: " << get().main.configFileName;
 		// read and pars configuration file
 		boost::property_tree::ptree config;
-		boost::property_tree::read_json(CONFIG_FILE, config);
+		boost::property_tree::read_json(get().main.configFileName, config);
 		// get parameters
 		try {
 			{
@@ -87,7 +85,7 @@ throw (Utils::Error)
 	}
 }
 
-const Configuration& Configuration::get()
+Configuration& Configuration::get()
 throw (Utils::Error)
 {
 	return ConfigurationImpl::get();

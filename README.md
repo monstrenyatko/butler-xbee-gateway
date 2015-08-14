@@ -107,7 +107,9 @@ Raspberry Pi (cross compilation)
 --------------------------------
 - Download or build your own `GCC` based toolchain for `ARM Linux` with hardware floating point support.
 <br/>See http://crosstool-ng.org
-- Install all dependencies to the `rootfs` in toolchain.
+- Install all dependencies to the toolchain `rootfs`.<br/>
+A lot of prebuilt libraries are available on official repository (http://archive.raspbian.org/raspbian).
+Just unpack files to `rootfs`.
 - Create a `build directory` for out of source compilation:
 ```sh
 mkdir build

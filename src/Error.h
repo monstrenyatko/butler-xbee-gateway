@@ -40,8 +40,12 @@ public:
 	Error(ErrorCode::Type code, const std::string& msg):mCode(code), mWhat(msg) {}
 	Error(const Error& e):mCode(e.mCode), mWhat(e.what()) {}
 	Error(const Error& e, const std::string& msg):mCode(e.mCode), mWhat(msg+mSep+e.what()) {}
-	Error(const std::exception& e):mCode(ErrorCode::UNSPECIFIED), mWhat(e.what()) {}
-	Error(const std::exception& e, const std::string& msg):mCode(ErrorCode::UNSPECIFIED), mWhat(msg+mSep+e.what()) {}
+	Error(const std::exception& e):mWhat(e.what()) {
+		mCode = isMe(e) ? ((Error&)e).mCode : ErrorCode::UNSPECIFIED;
+	}
+	Error(const std::exception& e, const std::string& msg):mWhat(msg+mSep+e.what()) {
+		mCode = isMe(e) ? ((Error&)e).mCode : ErrorCode::UNSPECIFIED;
+	}
 	Error(ErrorCode::Type code, const std::exception& e, const std::string& msg):mCode(code), mWhat(msg+mSep+e.what()) {}
 	virtual ~Error() throw() {}
 	const char* what() const throw() {
@@ -51,6 +55,11 @@ public:
 private:
 	ErrorCode::Type			mCode;
 	std::string				mWhat;
+
+	inline bool isMe(const std::exception& e) {
+		const Error* me = dynamic_cast<const Error*> (&e);
+		return me != NULL;
+	}
 };
 
 } /* namespace Utils */
