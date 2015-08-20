@@ -1,16 +1,16 @@
-XBEE GATEWAY
-============
+BUTLER-XBEE-GATEWAY
+===================
 
 About
 =====
-- It is a gateway between `XBee® ZigBee` and `TCP` network.
+- It is a gateway between `XBee® ZigBee` and `TCP` network for `BUTLER` smart house framework.
 - Gateway extracts data from `XBee® ZigBee` frames and sends to the `TCP` Server.
 - Gateway maintains separate `TCP` connection for each `XBee® ZigBee` device.
 
 In default configuration/example:
 - Gateway assumes that sensor uses `MQTT`(http://mqtt.org) protocol over `XBee® ZigBee`.
 - `MQTT` traffic is routed to `TCP` socket of the configured `MQTT Broker`.
-- `Arduino` board is used as sensor (See https://github.com/monstrenyatko/ArduinoMqttNode)
+- `Arduino` board is used as sensor (See https://github.com/monstrenyatko/butler-arduino-sensor)
 
 Purpose
 =======
@@ -20,7 +20,8 @@ The only way to communicate with world is a `Serial`. `Serial` is simple and rea
 A lot of RF modules do work via `Serial` interface.
 Unfortunately on other side you get `Serial` as well in case of `XBee® ZigBee`.
 `MQTT` broker doesn't support `Serial` connection directly and we need to pack data from `Serial` to `TCP`:<br/>
-	`Arduino` --> `Serial` --> `RF` <---z---> `RF` --> `Serial` --> `XBeeGateway` --> `TCP` --> `MQTT Broker`
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b>`Arduino` --> `Serial` --> `RF` <---z---> `RF` --> `Serial` --> `xbee-gateway` --> `TCP` --> `MQTT Broker`</b>
 
 Usage
 =====

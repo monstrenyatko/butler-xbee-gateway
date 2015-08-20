@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 2.8)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/build/cmake")
 
 #**************** Project name ********************
-project(XBeeGateway)
+set(_NAME_ butler-xbee-gateway)
+project(${_NAME_})
 
 #******************** Build Output ****************
 MESSAGE("PROJECT_OUTPUT_DIR:" ${CMAKE_BINARY_DIR})
@@ -76,5 +77,5 @@ include_directories(${src})
 
 #******************* Executable *************
 include_directories(${Boost_INCLUDE_DIRS})
-add_executable(XBeeGateway ${SOURCE_FILES})
-target_link_libraries(XBeeGateway ${System_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(${_NAME_} ${SOURCE_FILES})
+target_link_libraries(${_NAME_} ${System_LIBRARIES} ${Boost_LIBRARIES})
