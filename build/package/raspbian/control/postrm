@@ -1,0 +1,26 @@
+#!/bin/sh
+# postrm script
+
+set -e
+
+NAME=butler-xbee-gateway
+
+case "$1" in
+	purge)
+	;;
+
+	remove|abort-install|abort-upgrade|disappear)
+	;;
+
+	upgrade|failed-upgrade)
+	;;
+
+	*)
+		echo "postrm called with unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+update-rc.d ${NAME} remove >/dev/null
+
+exit 0

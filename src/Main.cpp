@@ -17,6 +17,7 @@
 #include "LogManager.h"
 #include "Configuration.h"
 #include "Options.h"
+#include "Version.h"
 /* External Includes */
 /* System Includes */
 
@@ -25,6 +26,7 @@ int main(int argc, char* argv[]) {
 	Utils::Logger log("Main");
 	try {
 		*log.info() << "START";
+		*log.info() << "Version: " << Version::value;
 		Utils::Options::get().process(argc, argv);
 		Utils::Configuration::get().load();
 		Utils::Configuration::get().dump();

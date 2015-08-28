@@ -1,17 +1,35 @@
 cmake_minimum_required(VERSION 2.8)
 
 #**************** Custom Cmake modules ************
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/build/cmake")
+set(PROJECT_TEMPLATE_PATH "${CMAKE_SOURCE_DIR}/build/template")
+set(PROJECT_CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/build/cmake")
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_CMAKE_MODULE_PATH})
 
 #**************** Project name ********************
-set(_NAME_ butler-xbee-gateway)
-project(${_NAME_})
+project(butler-xbee-gateway)
 
 #******************** Build Output ****************
 MESSAGE("PROJECT_OUTPUT_DIR:" ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(PROJECT_GENERATED_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/generated)
+
+#****************** Get version********************
+add_custom_target(Version)
+
+add_custom_command(
+	TARGET
+		Version
+	PRE_BUILD
+	COMMAND
+		${CMAKE_COMMAND}
+			-D SOURCE_DIR=${CMAKE_SOURCE_DIR}
+			-D MODULE_PATH=${PROJECT_CMAKE_MODULE_PATH}
+			-D TEMPLATE_PATH=${PROJECT_TEMPLATE_PATH}
+			-D GENERATED_OUTPUT_DIRECTORY=${PROJECT_GENERATED_OUTPUT_DIRECTORY}
+			-P ${PROJECT_CMAKE_MODULE_PATH}/version.cmake
+)
 
 #******************** Find Libs *******************
 #**** Boost ****
@@ -46,7 +64,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 
 #******************* System libraries *************
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(System_LIBRARIES "pthread")
 else()
 	set(System_LIBRARIES "")
@@ -71,11 +89,37 @@ set(SOURCE_FILES ${SOURCE_FILES} src/TcpNetDb.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/Thread.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/XBeeFrame.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} src/XBeeNet.cpp)
+# generated
+set(SOURCE_FILES ${SOURCE_FILES} ${PROJECT_GENERATED_OUTPUT_DIRECTORY}/Version.cpp)
+set_source_files_properties(${PROJECT_GENERATED_OUTPUT_DIRECTORY}/Version.cpp PROPERTIES GENERATED 1)
 
 #******************* Includes Global *************
-include_directories(${src})
+include_directories(src)
+include_directories(${PROJECT_GENERATED_OUTPUT_DIRECTORY})
 
 #******************* Executable *************
 include_directories(${Boost_INCLUDE_DIRS})
-add_executable(${_NAME_} ${SOURCE_FILES})
-target_link_libraries(${_NAME_} ${System_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_dependencies(${PROJECT_NAME} Version)
+target_link_libraries(${PROJECT_NAME} ${System_LIBRARIES} ${Boost_LIBRARIES})
+
+#******************* Package *******************
+set(PACKAGE_SYSTEM_ON true)
+set(PACKAGE_SYSTEM_NAME_LOWER "")
+string(TOLOWER "${PACKAGE_SYSTEM_NAME}" PACKAGE_SYSTEM_NAME_LOWER)
+MESSAGE("Package system name: " ${PACKAGE_SYSTEM_NAME_LOWER})
+if(PACKAGE_SYSTEM_NAME_LOWER STREQUAL "raspbian")
+	INCLUDE(Package/raspbian)
+else()
+	MESSAGE("Package configuration is not supported or not set => check 'PACKAGE_SYSTEM_NAME' value")
+	MESSAGE("Supported value: raspbian")
+	set(PACKAGE_SYSTEM_ON false)
+endif()
+# This must always be last
+if(PACKAGE_SYSTEM_ON)
+	configure_file(${PROJECT_CMAKE_MODULE_PATH}/CPack/Options.cmake.in CPackOptions.cmake @ONLY)
+	set(CPACK_PROJECT_CONFIG_FILE ${CMAKE_BINARY_DIR}/CPackOptions.cmake)
+	include(CPack)
+else()
+	MESSAGE("Packaging is disabled")
+endif()

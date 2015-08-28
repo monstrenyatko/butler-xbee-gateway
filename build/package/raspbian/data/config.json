@@ -1,0 +1,13 @@
+{
+	"logger":{
+		"level":"INFO"
+	},
+	"serial":{
+		"name":"/dev/ttyUSB0",
+		"baud": 57600
+	},
+	"tcp":{
+		"address":"localhost",
+		"port": 1883
+	}
+}

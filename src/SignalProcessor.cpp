@@ -29,7 +29,7 @@ public:
 	SignalListener():
 		Utils::Thread(__FUNCTION__),
 		mLog(getName()),
-		mSigSet(mIoService, SIGINT, SIGTERM)
+		mSigSet(mIoService, SIGHUP, SIGINT, SIGTERM)
 	{}
 
 	~SignalListener() {
@@ -87,6 +87,8 @@ private:
 			*mLog.debug() << UTILS_STR_FUNCTION << ", value: " << sigNumber;
 			bool reschedule = true;
 			switch(sigNumber) {
+				case SIGHUP:
+					// TODO: restart logger
 				case SIGINT:
 				case SIGTERM:
 				{

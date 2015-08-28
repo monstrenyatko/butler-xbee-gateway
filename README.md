@@ -127,13 +127,19 @@ export RASPBERRY_PI_ROOTFS=$HOME/raspberrypi/rootfs
 ```
 - Use `Cmake` to prepare the build:
 ```sh
-cmake -D CMAKE_TOOLCHAIN_FILE=build/cmake/Toolchain/raspberrypi.cmake <path to sources>
+cmake -D CMAKE_TOOLCHAIN_FILE=build/cmake/Toolchain/raspberrypi.cmake -D CMAKE_BUILD_TYPE=Release \
+      -D PACKAGE_SYSTEM_NAME=raspbian <path to sources>
 ```
 - Use `make` to start the build process:
 ```sh
 make
 ```
 - The resulting binary file is located in `<build directory>/bin/`
+- Use `make` to build `deb` package:
+```sh
+make package
+```
+- The resulting `deb` file is located in `<build directory>`
 
 Configuration
 =============
