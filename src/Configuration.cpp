@@ -69,10 +69,12 @@ throw (Utils::Error)
 		// get parameters
 		try {
 			{
-				std::string value(config.get<std::string>("logger.level"));
+				std::string value(config.get<std::string>("logger.level",
+						LoggerLevel::toString(get().logger.level)));
 				boost::to_upper(value);
 				get().logger.level = LoggerLevel::fromString(value);
 			}
+			get().logger.file = config.get<std::string>("logger.file", get().logger.file);
 			get().serial.name = config.get<std::string>("serial.name");
 			get().serial.baud = config.get<uint32_t>("serial.baud");
 			get().tcp.address = config.get<std::string>("tcp.address");
@@ -106,6 +108,7 @@ throw ()
 void Configuration::dump() const {
 	*ConfigurationImpl::mLog.info() << "Configuration:";
 	*ConfigurationImpl::mLog.info() << "logger.level = " << LoggerLevel::toString(logger.level);
+	*ConfigurationImpl::mLog.info() << "logger.file = " << logger.file;
 	*ConfigurationImpl::mLog.info() << "serial.name = " << serial.name;
 	*ConfigurationImpl::mLog.info() << "serial.boud = " << serial.baud;
 	*ConfigurationImpl::mLog.info() << "tcp.address = " << tcp.address;

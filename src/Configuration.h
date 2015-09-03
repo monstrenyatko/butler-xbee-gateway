@@ -54,7 +54,8 @@ public:
 
 	struct Logger {
 		LoggerLevel::Type	level;
-	} logger = {LoggerLevel::TRACE};
+		std::string			file;
+	} logger = {LoggerLevel::TRACE, ""};
 
 	struct Serial {
 		std::string		name;

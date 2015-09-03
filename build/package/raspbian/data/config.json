@@ -1,6 +1,7 @@
 {
 	"logger":{
-		"level":"INFO"
+		"level":"INFO",
+		"file":"/var/log/butler-xbee-gateway.log"
 	},
 	"serial":{
 		"name":"/dev/ttyUSB0",

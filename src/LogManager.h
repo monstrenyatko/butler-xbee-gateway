@@ -22,6 +22,8 @@
 #include <mutex>
 #include <string>
 #include <ostream>
+#include <fstream>
+#include <queue>
 
 namespace Utils {
 
@@ -47,12 +49,47 @@ public:
 	 * @param value the log line content
 	 */
 	void log(LoggerLevel::Type logLevel, const std::string& name, const std::string& value);
+
+
+	/**
+	 *	Starts logger.
+	 *	Must be called when configuration is read.
+	 */
+	void start();
+
+	/**
+	 * Reopens log file
+	 */
+	void rotate() throw ();
 private:
+	struct State {
+		typedef enum {
+			INIT,
+			OK,
+			EXIT
+		} Type;
+	};
+
+	struct Record {
+		LoggerLevel::Type		logLevel;
+		std::string				time;
+		std::string				name;
+		std::string				value;
+
+		Record(LoggerLevel::Type logLevel_, const std::string& time_,
+				const std::string& name_, const std::string& value_)
+		: logLevel(logLevel_), time(time_), name(name_), value(value_) {}
+	};
+
 	static LogManager*			mInstance;
 	static std::mutex			mMtxInstance;
-	std::mutex					mMtx;
-	std::ostream				mOsDef;
-	std::ostream				mOsErr;
+	std::recursive_mutex		mMtx;
+	State::Type					mState;
+	std::queue<Record>			mBuffer;
+	std::fstream				mFileDef;
+	std::ostream				mOsCoutDef;
+	std::ostream				mOsCoutErr;
+	std::ostream				mOsFileDef;
 
 	/**
 	 * Constructor
@@ -65,8 +102,17 @@ private:
 	~LogManager() throw (Utils::Error);
 
 	void log(LoggerLevel::Type logLevelCurrent, LoggerLevel::Type logLevel,
-							const std::string& name, const std::string& value);
+			const std::string& time, const std::string& name, const std::string& value);
+	void log(LoggerLevel::Type logLevel, const std::string& value);
 	std::ostream& getOs(LoggerLevel::Type logLevel);
+	void prepareOs();
+	LoggerLevel::Type getLogLevelCurrent();
+	void setState(State::Type state);
+	State::Type getState() {return mState;}
+	static std::string getTime();
+	void flushBuffer();
+	void openFile();
+	void reopenFile();
 
 	// Do not copy
 	LogManager(const LogManager&);

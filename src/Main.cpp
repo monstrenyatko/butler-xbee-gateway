@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
 		Utils::Options::get().process(argc, argv);
 		Utils::Configuration::get().load();
 		Utils::Configuration::get().dump();
+		Utils::LogManager::get().start();
 		Application::initialize();
 		Application::get().run();
 		Application::destroy();

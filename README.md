@@ -195,6 +195,8 @@ Set verbose level.
 		<td>DEBUG level + messages content</td>
 	</tr>
 </table>
+###### file (String)
+Path to logfile like `"/var/log/my.log"`.
 
 Serial
 ------

@@ -17,6 +17,7 @@
 #include "Error.h"
 #include "Thread.h"
 #include "Logger.h"
+#include "LogManager.h"
 /* External Includes */
 /* System Includes */
 #include <boost/asio/io_service.hpp>
@@ -88,7 +89,10 @@ private:
 			bool reschedule = true;
 			switch(sigNumber) {
 				case SIGHUP:
-					// TODO: restart logger
+				{
+					Utils::LogManager::get().rotate();
+				}
+					break;
 				case SIGINT:
 				case SIGTERM:
 				{

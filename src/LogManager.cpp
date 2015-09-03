@@ -27,11 +27,10 @@ namespace Utils {
 LogManager*			LogManager::mInstance = NULL;
 std::mutex			LogManager::mMtxInstance;
 
-std::ostream& putTime(std::ostream& out)
+std::string LogManager::getTime()
 {
 	boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-	out << boost::posix_time::to_iso_extended_string(now);
-	return out;
+	return boost::posix_time::to_iso_extended_string(now);
 }
 
 LogManager& LogManager::get()
@@ -62,7 +61,7 @@ throw ()
 	} catch (std::exception& e) {
 		std::cerr
 		<< LOG_MANAGER_LINE_PREFIX
-		<< putTime
+		<< getTime()
 		<< LOG_MANAGER_LINE_DELIMITER
 		<< UTILS_STR_FUNCTION << ", error: " << e.what() << std::endl;
 	}
@@ -70,42 +69,76 @@ throw ()
 
 LogManager::LogManager()
 :
-	mOsDef(std::cout.rdbuf()),
-	mOsErr(std::cerr.rdbuf())
+	mState(State::INIT),
+	mOsCoutDef(std::cout.rdbuf()),
+	mOsCoutErr(std::cerr.rdbuf()),
+	mOsFileDef(mFileDef.rdbuf())
 {
 }
 
 LogManager::~LogManager()
 throw (Utils::Error)
 {
+	std::lock_guard<std::recursive_mutex> locker(mMtx);
 	try {
-		mOsDef.flush();
-		mOsErr.flush();
+		setState(State::EXIT);
+		flushBuffer();
+		mOsCoutDef.flush();
+		mOsCoutErr.flush();
+		mOsFileDef.flush();
 	} catch (std::exception& e) {
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(LoggerManager));
 	}
 }
 
+void LogManager::start() {
+	std::lock_guard<std::recursive_mutex> locker(mMtx);
+	prepareOs();
+	setState(State::OK);
+	flushBuffer();
+}
+
 void LogManager::log(LoggerLevel::Type logLevel, const std::string& name, const std::string& value) {
-	LoggerLevel::Type currentLevel = LoggerLevel::TRACE;
-	try {
-		currentLevel = Utils::Configuration::get().logger.level;
-	} catch (std::exception& e) {
-		log(currentLevel, logLevel, "LogManager", UTILS_STR_FUNCTION + ", error: " + e.what());
+	std::lock_guard<std::recursive_mutex> locker(mMtx);
+	switch(getState()) {
+		case State::OK:
+		case State::EXIT:
+		{
+			log(getLogLevelCurrent(), logLevel, getTime(), name, value);
+		}
+			break;
+		default:
+		{
+			mBuffer.push(Record(logLevel, getTime(), name, value));
+		}
+			break;
 	}
-	log(currentLevel, logLevel, name, value);
+}
+
+void LogManager::rotate()
+throw ()
+{
+	std::lock_guard<std::recursive_mutex> locker(mMtx);
+	try
+	{
+		log(LoggerLevel::INFO, "LogManager", "Rotating");
+		{
+			reopenFile();
+		}
+	} catch (std::exception& e) {
+		log(LoggerLevel::ERROR, "LogManager", UTILS_STR_FUNCTION + ", error: " + e.what());
+	}
 }
 
 void LogManager::log(LoggerLevel::Type logLevelCurrent, LoggerLevel::Type logLevel,
-						const std::string& name, const std::string& value)
+		const std::string& time, const std::string& name, const std::string& value)
 {
 	if (logLevelCurrent >= logLevel) {
-		std::lock_guard<std::mutex> locker(mMtx);
 		// Format string
 		std::stringstream ss;
 		ss
 		<< LOG_MANAGER_LINE_PREFIX
-		<< putTime
+		<< time
 		<< LOG_MANAGER_LINE_DELIMITER
 		<< boost::format("[%-5s]") % LoggerLevel::toString(logLevel)
 		<< " : "
@@ -113,14 +146,71 @@ void LogManager::log(LoggerLevel::Type logLevelCurrent, LoggerLevel::Type logLev
 		<< LOG_MANAGER_LINE_DELIMITER
 		<< value;
 		// Output
-		getOs(logLevel) << ss.str() << std::endl;
+		log(logLevel, ss.str());
 	}
+}
+
+void  LogManager::log(LoggerLevel::Type logLevel, const std::string& value)
+{
+	getOs(logLevel) << value << std::endl;
 }
 
 std::ostream& LogManager::getOs(LoggerLevel::Type logLevel) {
 	switch (logLevel) {
-		case LoggerLevel::ERROR:	return mOsErr;
-		default:					return mOsDef;
+		case LoggerLevel::ERROR:	return mFileDef.is_open() ? mOsFileDef : mOsCoutErr;
+		default:					return mFileDef.is_open() ? mOsFileDef : mOsCoutDef;
+	}
+}
+
+void LogManager::prepareOs() {
+	try {
+		openFile();
+	} catch (std::exception& e) {
+		log(LoggerLevel::ERROR, "LogManager", UTILS_STR_FUNCTION + ", error: " + e.what());
+	}
+}
+
+LoggerLevel::Type LogManager::getLogLevelCurrent() {
+	LoggerLevel::Type res = LoggerLevel::TRACE;
+	try {
+		res = Utils::Configuration::get().logger.level;
+	} catch (std::exception& e) {
+		log(res, LoggerLevel::ERROR, getTime(), "LogManager", UTILS_STR_FUNCTION + ", error: " + e.what());
+	}
+	return res;
+}
+
+void LogManager::setState(State::Type state) {
+	mState = state;
+}
+
+void LogManager::flushBuffer() {
+	while(!mBuffer.empty()) {
+		log(getLogLevelCurrent(), mBuffer.front().logLevel,
+			mBuffer.front().time, mBuffer.front().name, mBuffer.front().value);
+		mBuffer.pop();
+	}
+}
+
+void LogManager::openFile() {
+	try {
+		std::string name(Utils::Configuration::get().logger.file);
+		if (!name.empty()) {
+			mFileDef.open(name, std::ofstream::out | std::ofstream::app);
+		}
+	} catch (std::exception& e) {
+		log(LoggerLevel::ERROR, "LogManager", UTILS_STR_FUNCTION + ", error: " + e.what());
+	}
+}
+
+void LogManager::reopenFile() {
+	try {
+		if (mFileDef.is_open()) {
+			mFileDef.close();
+		}
+		openFile();
+	} catch (std::exception& e) {
+		log(LoggerLevel::ERROR, "LogManager", UTILS_STR_FUNCTION + ", error: " + e.what());
 	}
 }
 

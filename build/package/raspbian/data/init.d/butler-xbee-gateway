@@ -18,6 +18,7 @@ DAEMON_PARAMS="-c /etc/${NAME}/config.json"
 DAEMON_START_PARAMS="--start --quiet --oknodo --background  --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} -- ${DAEMON_PARAMS}"
 DAEMON_STOP_PARAMS_STRICT="--stop --quiet --retry 30 --pidfile ${PIDFILE}"
 DAEMON_STOP_PARAMS="${DAEMON_STOP_PARAMS_STRICT} --oknodo"
+DAEMON_ROTATE_PARAMS="--stop --quiet --signal HUP --pidfile $PIDFILE --exec $DAEMON"
 
 test -x ${DAEMON} || exit 0
 
@@ -25,8 +26,6 @@ test -x ${DAEMON} || exit 0
 umask 022
 
 # Define LSB log_* functions.
-# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
-# and status_of_proc is working.
 . /lib/lsb/init-functions
 
 export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
@@ -41,6 +40,7 @@ case "$1" in
 		log_end_msg 1
 	fi
 	;;
+
   stop)
 	log_daemon_msg "Stopping ${NAME}" "${NAME}"
 	if start-stop-daemon ${DAEMON_STOP_PARAMS}
@@ -67,7 +67,7 @@ case "$1" in
 	;;
 
   try-restart)
-	log_daemon_msg "Restarting ${NAME}" "${NAME}"
+	log_daemon_msg "Try-Restarting ${NAME}" "${NAME}"
 	set +e
 	start-stop-daemon ${DAEMON_STOP_PARAMS_STRICT}
 	RET="$?"
@@ -96,12 +96,22 @@ case "$1" in
 	esac
 	;;
 
+  rotate)
+		log_daemon_msg "Rotating logs for ${NAME}" "${NAME}"
+		if start-stop-daemon ${DAEMON_ROTATE_PARAMS}
+		then
+			log_end_msg 0
+		else
+			log_end_msg 1
+		fi
+		;;
+
   status)
 	status_of_proc -p ${PIDFILE} ${DAEMON} ${NAME} && exit 0 || exit $?
 	;;
 
   *)
-	log_action_msg "Usage: /etc/init.d/${NAME} {start|stop|restart|try-restart|status}"
+	log_action_msg "Usage: /etc/init.d/${NAME} {start|stop|restart|try-restart|rotate|status}"
 	exit 1
 esac
 
