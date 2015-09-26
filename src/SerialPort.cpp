@@ -103,7 +103,7 @@ struct SerialPortContext {
 	std::unique_ptr<Serial>							serial;
 	std::unique_ptr<SerialPortOpener>				portOpener;
 
-	SerialPortContext(const std::string& name) : processor(name) {}
+	SerialPortContext(const std::string& name) : processor(name), portBaud(0) {}
 };
 
 ///////////////////// SerialPortReader /////////////////////

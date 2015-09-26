@@ -165,6 +165,36 @@ inline __iom__put_array putArray(const std::vector<uint8_t>& data) {
 };
 
 /**
+ * Print byte content in HEX mode (helper class)
+ */
+class __iom__put_byte {
+public:
+	inline explicit __iom__put_byte(uint8_t data)
+		: mData(data) {}
+
+	inline friend std::ostream& operator<<(std::ostream& os, const __iom__put_byte& data)
+	{
+		// save flags
+		std::ios::fmtflags f(os.flags());
+		// print
+		os << std::uppercase << std::hex << std::setw(2) << std::setfill('0')
+			<< (int)(data.mData);
+		// revert flags
+		os.flags(f);
+		return os;
+	}
+private:
+	const uint8_t		mData;
+};
+
+/**
+ * Print byte content in HEX mode with 'XX' format
+ */
+inline __iom__put_byte putByte(uint8_t data) {
+	return __iom__put_byte(data);
+};
+
+/**
  * Overload operator '<<' for custom manipulators.
  * If the 'os' is not an instance of 'LogStream' Do nothing.
  */

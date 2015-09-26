@@ -52,59 +52,29 @@ public:
 	 */
 	void push(const XBeeBuffer& buffer) {
 		for (uint8_t b: buffer) {
-			// wait the start of the frame
-			if (mBuffer->empty()) {
-				switch (b) {
-					case API_START_DELIM:
-						mBuffer->push_back(b);
-						continue;
-					default:
-						// skip
-						continue;
-				}
-			}
-			// process Escape sequence
-			if (mIsEscapeSequence) {
-				switch (b) {
-					case DO_API_ESCPE(API_START_DELIM):
-					case DO_API_ESCPE(API_ESCAPE):
-					case DO_API_ESCPE(API_XON):
-					case DO_API_ESCPE(API_XOFF):
-						mIsEscapeSequence = false;
-						mBuffer->push_back(DO_API_ESCPE(b));
-						continue;
-					default:
-						*mLog.warn() << UTILS_STR_FUNCTION << ", bad Escape";
-						drop();
-						continue;
-				}
-			}
-			// other characters
-			switch (b) {
-				case API_ESCAPE:
-					mIsEscapeSequence = true;
-					continue;
-				case API_START_DELIM:
-					*mLog.warn() << UTILS_STR_FUNCTION << ", unexpected start of next frame";
-					drop();
-					// no break
-				default:
-					mBuffer->push_back(b);
-					break;
-			}
+			push(b);
 			// get length; length is 16-bit [1:2] bytes
 			if (!mFrameLength && mBuffer->size()>=3) {
 				uint8_t b1 = (*mBuffer)[1];
 				uint8_t b2 = (*mBuffer)[2];
 				mFrameLength = ((((uint16_t)b1)<<8) & 0xFF00) | (b2 & 0x00FF);
+				*mLog.debug() << UTILS_STR_FUNCTION << ", frame-length: "<< getFrameSize();
+				if (getFrameSize() > 200) {
+					*mLog.warn() << UTILS_STR_FUNCTION << ", frame-length is huge";
+				}
 				mBuffer->reserve(getFrameSize());
 			}
 			// check length
-			if (mFrameLength && mBuffer->size() == getFrameSize()) {
+			if (mFrameLength && mBuffer->size() >= getFrameSize()) {
+				if (mBuffer->size() != getFrameSize()) {
+					*mLog.warn() << UTILS_STR_FUNCTION << ", new-frame.size != frame-length"
+							<< "[" << mBuffer->size() << "!=" << getFrameSize() << "]";
+				}
 				// frame is received
 				pop();
 			}
 		}
+		*mLog.debug() << UTILS_STR_FUNCTION << ", new-frame.current-size: "<< mBuffer->size();
 	}
 
 private:
@@ -114,6 +84,55 @@ private:
 	std::unique_ptr<XBeeBuffer>					mBuffer;
 	bool										mIsEscapeSequence;
 	uint16_t									mFrameLength;
+
+	/**
+	 * Processes one byte
+	 */
+	void push(uint8_t b) {
+		// wait the start of the frame
+		if (mBuffer->empty()) {
+			switch (b) {
+				case API_START_DELIM:
+					*mLog.debug() << UTILS_STR_FUNCTION << ", new-frame started";
+					mBuffer->push_back(b);
+					// no break
+				default:
+					// skip
+					return;
+			}
+		}
+		// process Escape sequence
+		if (mIsEscapeSequence) {
+			switch (b) {
+				case DO_API_ESCPE(API_START_DELIM):
+				case DO_API_ESCPE(API_ESCAPE):
+				case DO_API_ESCPE(API_XON):
+				case DO_API_ESCPE(API_XOFF):
+					*mLog.trace() << UTILS_STR_FUNCTION << ", escaping "
+						<< Utils::putByte(b) << " => " << Utils::putByte(DO_API_ESCPE(b));
+					mIsEscapeSequence = false;
+					mBuffer->push_back(DO_API_ESCPE(b));
+					return;
+				default:
+					*mLog.warn() << UTILS_STR_FUNCTION << ", bad Escape";
+					drop();
+					return;
+			}
+		}
+		// other characters
+		switch (b) {
+			case API_ESCAPE:
+				mIsEscapeSequence = true;
+				return;
+			case API_START_DELIM:
+				*mLog.warn() << UTILS_STR_FUNCTION << ", unexpected start of next frame";
+				pop();
+				// no break
+			default:
+				mBuffer->push_back(b);
+				return;
+		}
+	}
 
 	/**
 	 * Notifies about new received frame and starts assembling of a new one.

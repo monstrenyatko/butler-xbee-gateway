@@ -189,9 +189,6 @@ public:
 	XBeeFrameOptionsRecv(XBeeBuffer::const_iterator& cursor, const XBeeBuffer& buffer) throw (Utils::Error)
 			:XBeeFrameOptions(cursor, buffer) {}
 private:
-	type		mValue;
-
-	void decode(XBeeBuffer::const_iterator& cursor, const XBeeBuffer&) throw (Utils::Error);
 };
 
 class XBeeFrameOptionsSend: public XBeeFrameOptions {
@@ -212,9 +209,6 @@ public:
 	XBeeFrameOptionsSend(XBeeBuffer::const_iterator& cursor, const XBeeBuffer& buffer) throw (Utils::Error)
 			:XBeeFrameOptions(cursor, buffer) {}
 private:
-	type		mValue;
-
-	void decode(XBeeBuffer::const_iterator& cursor, const XBeeBuffer&) throw (Utils::Error);
 };
 
 class XBeeFrameRadius {
