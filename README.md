@@ -8,7 +8,7 @@ About
 - Gateway maintains separate `TCP` connection for each `XBee® ZigBee` device.
 
 In default configuration/example:
-- Gateway assumes that sensor uses `MQTT`(http://mqtt.org) protocol over `XBee® ZigBee`.
+- Gateway assumes that sensor uses [MQTT](http://mqtt.org) protocol over `XBee® ZigBee`.
 - `MQTT` traffic is routed to `TCP` socket of the configured `MQTT Broker`.
 - `Arduino` board is used as sensor (See https://github.com/monstrenyatko/butler-arduino-sensor)
 
@@ -31,7 +31,7 @@ Usage
 
 XBee® ZigBee Network Configuration
 ==================================
-- Install `XCTU`(http://www.digi.com/products/wireless-wired-embedded-solutions/zigbee-rf-modules/xctu).
+- Install [XCTU](http://www.digi.com/products/wireless-wired-embedded-solutions/zigbee-rf-modules/xctu).
 - Use `XCTU` for installing the firmware to the `XBee®` devices.
 - `XBee® ZigBee` network must have only one `Coordinator`.
 - `XBee® ZigBee Coordinator` must be connected to the `PC` were you plan to run the application.
@@ -54,7 +54,7 @@ Prepare build environment
 
 Cmake
 -----
-Install `Cmake`(http://www.cmake.org) with version `2.8` or later.
+Install [Cmake](http://www.cmake.org) with version `2.8` or later.
 
 C++
 ---
@@ -62,7 +62,7 @@ Install the compiler with `C++11` support.
 
 Boost
 -----
-Install `Boost`(http://www.boost.org) library with version `1.45` or later.
+Install [Boost](http://www.boost.org) libraries with version `1.45` or later.
 
 Building
 ========
@@ -71,11 +71,11 @@ UNIX like OS
 ------------
 - Create a `build directory` for out of source compilation:
 ```sh
-mkdir build
+mkdir <build directory>
 ```
 - Go to the `build directory`:
 ```sh
-cd build
+cd <build directory>
 ```
 - Use `Cmake` to prepare the build:
 ```sh
@@ -91,11 +91,11 @@ UNIX like OS + Eclipse
 ----------------------
 - Create a `build directory` for out of source compilation:
 ```sh
-mkdir build
+mkdir <build directory>
 ```
 - Go to the `build directory`:
 ```sh
-cd build
+cd <build directory>
 ```
 - Use `cmake` to prepare the build:
 ```sh
@@ -104,47 +104,36 @@ cmake -G"Eclipse CDT4 - Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug <path to sourc
 - Import the project from the `build directory` (`File -> Import -> General -> Existing Projects into Workspace`)
 - Use `Project -> Build Project` to start the build process
 
-Raspberry Pi (cross compilation)
---------------------------------
-- Download or build your own `GCC` based toolchain for `ARM Linux` with hardware floating point support.
-<br/>See http://crosstool-ng.org
-- Install all dependencies to the toolchain `rootfs`.<br/>
-A lot of prebuilt libraries are available on official repository (http://archive.raspbian.org/raspbian).
-Just unpack files to `rootfs`.
+Raspberry Pi (cross compilation using Docker)
+---------------------------------------------
+- Pull pre built `Docker` image of the [cross compiler](https://github.com/monstrenyatko/docker-rpi-cross-compiler) :
+```sh
+docker pull monstrenyatko/docker-rpi-cross-compiler
+```
+- Install cross compiler helper script `rpxc`:
+```sh
+docker run --rm monstrenyatko/docker-rpi-cross-compiler > ~/bin/rpxc
+chmod +x ~/bin/rpxc
+```
+**Note:** `~/bin` must be in your `PATH`
 - Create a `build directory` for out of source compilation:
 ```sh
-mkdir build
+mkdir <build directory>
 ```
 - Go to the `build directory`:
 ```sh
-cd build
+cd <build directory>
 ```
-- Configure environment:
+- Use script to build `deb` package:
 ```sh
-export RASPBERRY_PI_TOOLCHAIN_PREFIX=arm-raspberry-linux-gnueabihf-
-export RASPBERRY_PI_TOOLCHAIN=$HOME/raspberrypi/toolchain
-export RASPBERRY_PI_ROOTFS=$HOME/raspberrypi/rootfs
-```
-- Use `Cmake` to prepare the build:
-```sh
-cmake -D CMAKE_TOOLCHAIN_FILE=build/cmake/Toolchain/raspberrypi.cmake -D CMAKE_BUILD_TYPE=Release \
-      -D PACKAGE_SYSTEM_NAME=raspbian <path to sources>
-```
-- Use `make` to start the build process:
-```sh
-make
-```
-- The resulting binary file is located in `<build directory>/bin/`
-- Use `make` to build `deb` package:
-```sh
-make package
-```
+<path to sources>/build/docker_raspberrypi/build.sh <path to sources>
+``` 
 - The resulting `deb` file is located in `<build directory>`
 
 Configuration
 =============
-Configuration file is done in `JSON`(http://www.json.org) format.
-######Example:
+Configuration file is done in [JSON](http://www.json.org) format.
+###### Example:
 ```json
 {
 	"logger":{
@@ -195,6 +184,7 @@ Set verbose level.
 		<td>DEBUG level + messages content</td>
 	</tr>
 </table>
+
 ###### file (String)
 Path to logfile like `"/var/log/my.log"`.
 
