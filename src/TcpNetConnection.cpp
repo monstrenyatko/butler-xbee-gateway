@@ -216,8 +216,8 @@ void TcpNetConnection::onRead(const boost::system::error_code& error, std::size_
 						(new Networking::Buffer(mBufferRead, mBufferRead+qty));
 			std::unique_ptr<Networking::DataUnit> unit(new Networking::DataUnitTcp(
 					std::move(data),
-					std::move(mTo->clone()),	// To -> From
-					std::move(mFrom->clone())	// From -> To
+					mTo->clone(),	// To -> From
+					mFrom->clone()	// From -> To
 			));
 			Application::get().getRouter().process(std::move(unit));
 		}

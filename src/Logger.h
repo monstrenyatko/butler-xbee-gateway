@@ -96,19 +96,19 @@ public:
 	/* Logging stream generators */
 
 	std::unique_ptr<LogStream> trace() const
-		{return std::move(std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::TRACE)));}
+		{return std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::TRACE));}
 
 	std::unique_ptr<LogStream> debug() const
-		{return std::move(std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::DEBUG)));}
+		{return std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::DEBUG));}
 
 	std::unique_ptr<LogStream> info() const
-		{return std::move(std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::INFO)));}
+		{return std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::INFO));}
 
 	std::unique_ptr<LogStream> warn() const
-		{return std::move(std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::WARN)));}
+		{return std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::WARN));}
 
 	std::unique_ptr<LogStream> error() const
-		{return std::move(std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::ERROR)));}
+		{return std::unique_ptr<LogStream>(new LogStream(getName(), LoggerLevel::ERROR));}
 
 	/**
 	 * Get the logger name

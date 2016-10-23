@@ -230,8 +230,8 @@ public:
 			std::unique_ptr<Networking::Buffer> buffer)
 	:
 		mCbk(cbk),
-		mFrom(std::move(from->clone())),
-		mTo(std::move(to->clone())),
+		mFrom(from->clone()),
+		mTo(to->clone()),
 		mData(std::move(buffer))
 	{}
 

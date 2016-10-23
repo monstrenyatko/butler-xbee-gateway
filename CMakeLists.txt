@@ -51,8 +51,13 @@ MESSAGE("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 if((${CMAKE_CXX_COMPILER_ID} MATCHES "Clang") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU"))
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
+	if (Boost_VERSION VERSION_LESS 105900)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs")
+	endif()
 	set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -rdynamic")
 endif()
+MESSAGE("CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
+MESSAGE("CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 #******************* Compiler Defines *************
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
