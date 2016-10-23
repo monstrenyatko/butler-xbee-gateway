@@ -18,11 +18,11 @@
 #define __has_feature(__x) 0
 #endif
 
-#if __has_feature(cxx_atomic)
-#include <atomic>
-#else
+#if __cplusplus < 201103L
 #include <boost/atomic.hpp>
 #define UTILS_USE_BOOST_ATOMIC
+#else
+#include <atomic>
 #endif
 
 namespace Utils {
