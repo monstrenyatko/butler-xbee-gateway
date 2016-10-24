@@ -28,5 +28,8 @@ fi
 export RPXC_IMAGE=monstrenyatko/docker-rpi-cross-compiler
 export RPXC_ARGS="-v $SRC_PATH:/source"
 
-rpxc -- /source/build/docker_raspberrypi/run.sh
+docker run --rm $RPXC_IMAGE > ./rpxc
+chmod +x ./rpxc
+
+./rpxc -- /source/build/docker_raspberrypi/run.sh
 

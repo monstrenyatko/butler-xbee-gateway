@@ -110,12 +110,6 @@ Raspberry Pi (cross compilation using Docker)
 ```sh
 docker pull monstrenyatko/docker-rpi-cross-compiler
 ```
-- Install cross compiler helper script `rpxc`:
-```sh
-docker run --rm monstrenyatko/docker-rpi-cross-compiler > ~/bin/rpxc
-chmod +x ~/bin/rpxc
-```
-**Note:** `~/bin` must be in your `PATH`
 - Create a `build directory` for out of source compilation:
 ```sh
 mkdir <build directory>
