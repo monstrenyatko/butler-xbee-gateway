@@ -1,0 +1,13 @@
+version: '2'
+services:
+  butler-xbee-gateway:
+    image: monstrenyatko/rpi-butler-xbee-gateway
+    container_name: butler-xbee-gateway
+    volumes:
+      - butler-xbee-gateway-config:/config:ro
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0:rw"
+    restart: unless-stopped
+volumes:
+  butler-xbee-gateway-config:
+    external: true
