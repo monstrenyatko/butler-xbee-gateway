@@ -156,6 +156,11 @@ void TcpNet::onSend(std::unique_ptr<Networking::Address> from, std::unique_ptr<N
 	*mLog.debug() << UTILS_STR_FUNCTION << ", size:" << buffer->size();
 	try {
 		TcpNetConnection* connection = mCtx->db.get(*from, *to);
+		if (connection && isMqttConnect(*buffer)) {
+			*mLog.info() << "Reestablish Connection";
+			connection->close();
+			connection = NULL;
+		}
 		if (!connection) {
 			*mLog.info() << "Connecting, " << from->toString() << " <-> " << to->toString();
 			// prepare parameters
@@ -174,6 +179,47 @@ void TcpNet::onSend(std::unique_ptr<Networking::Address> from, std::unique_ptr<N
 	} catch (Utils::Error& e) {
 		*mLog.error() << UTILS_STR_FUNCTION << ", error: " << e.what();
 	}
+}
+
+bool TcpNet::isMqttConnect(const Networking::Buffer& buffer) const {
+	uint32_t size = buffer.size();
+	if (size > 1) {
+		uint8_t maxLengthCursor = 4;
+		uint8_t cursor = 0;
+		uint8_t header = buffer[cursor++];
+		// check header
+		*mLog.debug() << UTILS_STR_FUNCTION << ", MQTT Header" <<  Utils::putByte(header);
+		if ((((header & 0xF0) >> 4) & 0x0F) == 1) {
+			*mLog.debug() << UTILS_STR_FUNCTION << ", MQTT Connect header" <<  Utils::putByte(header);
+			// skip length: skip all bytes with most significant bit == '1' and next one with most significant bit == '0'
+			do {
+				if (cursor > maxLengthCursor ) {
+					*mLog.debug() << UTILS_STR_FUNCTION << "Max length cursor value reached";
+					return false;
+				}
+			} while ((buffer[cursor++] & 128) != 0);
+			*mLog.debug() << UTILS_STR_FUNCTION << ", length size: " << (int)cursor;
+			// skip 2 bytes header length
+			cursor+=2;
+			if ((int)size > (cursor + 6)) {
+				*mLog.debug() << UTILS_STR_FUNCTION << ", MQTT Connect protocol name:" << buffer[cursor];
+				*mLog.debug() << UTILS_STR_FUNCTION << ", MQTT Connect protocol name:" << buffer[cursor+1];
+				*mLog.debug() << UTILS_STR_FUNCTION << ", MQTT Connect protocol name:" << buffer[cursor+2];
+				*mLog.debug() << UTILS_STR_FUNCTION << ", MQTT Connect protocol name:" << buffer[cursor+3];
+				if (buffer[cursor] == 'M' && buffer[cursor+1] == 'Q') {
+					if (buffer[cursor+2] == 'T') {
+						return (buffer[cursor+3] == 'T');
+					} else if (buffer[cursor+2] == 'I') {
+						*mLog.debug() << UTILS_STR_FUNCTION << ", MQTT Connect protocol name:" << buffer[cursor+4];
+						*mLog.debug() << UTILS_STR_FUNCTION << ", MQTT Connect protocol name:" << buffer[cursor+5];
+						return (buffer[cursor+3] == 's' && buffer[cursor+4] == 'd' && buffer[cursor+5] == 'p');
+					}
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 ///////////////////// TcpNet::Internal Interface /////////////////////

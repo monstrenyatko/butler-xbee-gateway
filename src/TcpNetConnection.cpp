@@ -94,6 +94,11 @@ void TcpNetConnection::send(std::unique_ptr<Networking::Buffer> buffer) {
 	}
 }
 
+void TcpNetConnection::close() {
+	std::lock_guard<std::mutex> locker(mMtx);
+	destroy();
+}
+
 ///////////////////// TcpNetConnection::Internal /////////////////////
 void TcpNetConnection::setState(State v) {
 	mState = v;

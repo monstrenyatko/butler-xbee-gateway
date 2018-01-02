@@ -43,10 +43,12 @@ public:
 	const Networking::AddressTcp* getTo() const {return mTo.get();}
 
 	void send(std::unique_ptr<Networking::Buffer> buffer);
+	void close();
+	bool isOpen() const {std::lock_guard<std::mutex> locker(mMtx); return isAlive();}
 private:
 	static Utils::IdGen									mIdGen;
 	Utils::Logger										mLog;
-	std::mutex											mMtx;
+	mutable std::mutex									mMtx;
 	enum State {
 		STATE_NEW,
 		STATE_CONNECTED,

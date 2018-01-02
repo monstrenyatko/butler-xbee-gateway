@@ -36,7 +36,8 @@ TcpNetDb::~TcpNetDb() {
 
 TcpNetConnection* TcpNetDb::get(const Networking::Address& from, const Networking::Address& to) {
 	for (auto i: mConnections) {
-		if (from.isEqual(*(i->getFrom()))
+		if (i->isOpen()
+			&& from.isEqual(*(i->getFrom()))
 			&& to.isEqual(*(i->getTo())))
 		{
 			return i;
@@ -48,16 +49,6 @@ TcpNetConnection* TcpNetDb::get(const Networking::Address& from, const Networkin
 void TcpNetDb::put(std::unique_ptr<TcpNetConnection> connection) {
 	assert(connection.get());
 	*mLog.debug() << UTILS_STR_FUNCTION << ", Id: " << connection->getId();
-	for (auto it = mConnections.begin(); it!=mConnections.end(); it++) {
-		if (connection->getFrom()->isEqual(*((*it)->getFrom()))
-			&& connection->getTo()->isEqual(*((*it)->getTo())))
-		{
-			// replace old by new one
-			destroy(*it);
-			*it = connection.release();
-			return;
-		}
-	}
 	// add new one
 	mConnections.push_back(connection.get());
 	connection.release();

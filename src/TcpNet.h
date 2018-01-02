@@ -77,6 +77,7 @@ private:
 	// Methods
 	void onSend(std::unique_ptr<Networking::Address>, std::unique_ptr<Networking::Address>,
 			std::unique_ptr<Networking::Buffer>);
+	bool isMqttConnect(const Networking::Buffer&) const;
 
 	// Internal
 	friend class TcpNetCommand;
