@@ -1,3 +1,6 @@
 [submodule "src_ext/ArduinoMqtt"]
 	path = src_ext/ArduinoMqtt
 	url = git://github.com/monstrenyatko/ArduinoMqtt.git
+[submodule "src_ext/libjwt"]
+	path = src_ext/libjwt
+	url = git://github.com/benmcollins/libjwt
