@@ -36,11 +36,33 @@ add_custom_command(
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.45.0 REQUIRED COMPONENTS system date_time program_options)
 if (NOT Boost_FOUND)
-	MESSAGE(FATAL_ERROR "Boost are not found")
+	MESSAGE(FATAL_ERROR "Boost is not found")
 else()
 	MESSAGE("Boost_VERSION: ${Boost_VERSION}")
 	MESSAGE("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 	MESSAGE("Boost_LIBRARIES: ${Boost_LIBRARIES}")
+endif()
+#**** Jansson ****
+find_package (Jansson REQUIRED)
+if (NOT JANSSON_FOUND)
+	MESSAGE(FATAL_ERROR "Jansson is not found")
+else()
+	MESSAGE("JANSSON_INCLUDE_DIRS: ${JANSSON_INCLUDE_DIRS}")
+	MESSAGE("JANSSON_LIBRARIES: ${JANSSON_LIBRARIES}")
+endif()
+#**** OpenSSL ****
+find_package (OpenSSL REQUIRED)
+if (NOT OPENSSL_FOUND)
+	MESSAGE(FATAL_ERROR "OpenSSL is not found")
+else()
+	find_path(OPENSSL_INCLUDE_DIR_EXTRA
+		NAMES
+			openssl/opensslconf.h
+	)
+	MESSAGE("OPENSSL_VERSION: ${OPENSSL_VERSION}")
+	MESSAGE("OPENSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
+	MESSAGE("OPENSSL_INCLUDE_DIR_EXTRA: ${OPENSSL_INCLUDE_DIR_EXTRA}")
+	MESSAGE("OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
 endif()
 
 #******************** Macro *****************
@@ -75,6 +97,39 @@ else()
 	set(System_LIBRARIES "")
 endif()
 
+#******************* MQTTPacket library *************
+add_library(MQTTPacket
+	src_ext/ArduinoMqtt/src/MQTTPacket/MQTTConnectClient.c
+	src_ext/ArduinoMqtt/src/MQTTPacket/MQTTConnectServer.c
+	src_ext/ArduinoMqtt/src/MQTTPacket/MQTTPacket.c
+)
+
+#******************* JWT library *************
+file(WRITE ${PROJECT_GENERATED_OUTPUT_DIRECTORY}/libjwt/config.h "")
+add_library(jwt
+	src_ext/libjwt/libjwt/base64.c
+	src_ext/libjwt/libjwt/jwt.c
+	src_ext/libjwt/libjwt/jwt-openssl.c
+)
+target_include_directories(jwt PRIVATE ${PROJECT_GENERATED_OUTPUT_DIRECTORY}/libjwt)
+target_include_directories(jwt PRIVATE src_ext/libjwt/libjwt)
+target_include_directories(jwt PRIVATE
+	${OPENSSL_INCLUDE_DIR}
+	${OPENSSL_INCLUDE_DIR_EXTRA}
+	${JANSSON_INCLUDE_DIRS}
+)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	target_compile_definitions(jwt PRIVATE -DNO_WEAK_ALIASES)
+endif()
+
+#******************* Includes *************
+#**** Boost ****
+include_directories(${Boost_INCLUDE_DIRS})
+#**** MQTTPacket ****
+include_directories(src_ext/ArduinoMqtt/src/MQTTPacket)
+#**** JWT ****
+include_directories(src_ext/libjwt/include)
+
 #******************* Sources *************
 set(SOURCE_FILES "")
 set(SOURCE_FILES ${SOURCE_FILES} src/Application.cpp)
@@ -98,15 +153,19 @@ set(SOURCE_FILES ${SOURCE_FILES} src/XBeeNet.cpp)
 set(SOURCE_FILES ${SOURCE_FILES} ${PROJECT_GENERATED_OUTPUT_DIRECTORY}/Version.cpp)
 set_source_files_properties(${PROJECT_GENERATED_OUTPUT_DIRECTORY}/Version.cpp PROPERTIES GENERATED 1)
 
-#******************* Includes Global *************
-include_directories(src)
-include_directories(${PROJECT_GENERATED_OUTPUT_DIRECTORY})
-
 #******************* Executable *************
-include_directories(${Boost_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 add_dependencies(${PROJECT_NAME} Version)
-target_link_libraries(${PROJECT_NAME} ${System_LIBRARIES} ${Boost_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_GENERATED_OUTPUT_DIRECTORY})
+target_include_directories(${PROJECT_NAME} PRIVATE src)
+target_link_libraries(${PROJECT_NAME}
+	${System_LIBRARIES}
+	${Boost_LIBRARIES}
+	${OPENSSL_LIBRARIES}
+	${JANSSON_LIBRARIES}
+	jwt
+	MQTTPacket
+)
 
 #******************* Package *******************
 set(PACKAGE_SYSTEM_ON true)

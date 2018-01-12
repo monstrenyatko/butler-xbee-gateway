@@ -4,6 +4,7 @@
 
 exiterr() { echo "Error: ${1}" >&2; exit 1; }
 
+set -e
 set -x
 
 if [ ! -f /.dockerenv ]; then
