@@ -1,0 +1,21 @@
+root = true
+
+[*]
+insert_final_newline = true
+end_of_line = lf
+
+[*.yml]
+indent_style = space
+indent_size = 2
+
+[*.json]
+indent_style = tab
+indent_size = 4
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{h,hpp,c,cpp}]
+indent_style = tab
+indent_size = 4
