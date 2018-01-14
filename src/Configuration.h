@@ -49,24 +49,35 @@ public:
 	void dump() const;
 
 	struct Main {
-		std::string		configFileName;
+		std::string									configFileName;
 	} main = {"config.json"};
 
 	struct Logger {
-		LoggerLevel::Type	level;
-		std::string			file;
+		LoggerLevel::Type							level;
+		std::string									file;
 	} logger = {LoggerLevel::TRACE, ""};
 
 	struct Serial {
-		std::string		name;
-		uint32_t		baud;
+		std::string									name;
+		uint32_t										baud;
 
 	} serial = {"/dev/serial", 57600};
 
 	struct Tcp {
-		std::string		address;
-		uint32_t		port;
+		std::string									address;
+		uint32_t										port;
 	} tcp = {"localhost", 1883};
+
+	struct Mqtt {
+		bool											resetOnConnect;
+		bool											forceAuth;
+	} mqtt = {true, false};
+
+	struct Jwt {
+		uint32_t										expirationSec;
+		std::string									key;
+		std::string									keyFile;
+	} jwt = {24*60*60, "", ""};
 private:
 	Configuration() throw () {};
 	~Configuration() throw () {};

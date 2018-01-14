@@ -28,6 +28,13 @@
 #define TCP_READER_BUFFER_SIZE 512
 class TcpNet;
 
+namespace TcpNetProtocol {
+	enum Type {
+		UNSET,
+		MQTT,
+	};
+}
+
 
 /**
  * TCP network connection.
@@ -41,10 +48,14 @@ public:
 	Utils::Id getId() const {return mId;}
 	const Networking::Address* getFrom() const {return mFrom.get();}
 	const Networking::AddressTcp* getTo() const {return mTo.get();}
+	TcpNetProtocol::Type getProtocol() const {return  mProtocol;}
+	uint32_t getExpiration() const {return mExpirationTsSec;}
 
 	void send(std::unique_ptr<Networking::Buffer> buffer);
 	void close();
 	bool isOpen() const {std::lock_guard<std::mutex> locker(mMtx); return isAlive();}
+	void setProtocol(TcpNetProtocol::Type protocol) {mProtocol = protocol;}
+	void setExpiration(uint32_t expirationTsSec) {mExpirationTsSec = expirationTsSec;}
 private:
 	static Utils::IdGen									mIdGen;
 	Utils::Logger										mLog;
@@ -59,13 +70,15 @@ private:
 	}													mState;
 	Utils::Id											mId;
 	TcpNet&												mOwner;
-	boost::asio::ip::tcp::socket						mSocket;
-	boost::asio::ip::tcp::resolver::iterator			mEndPoint;
-	std::unique_ptr<Networking::Address>				mFrom;
+	boost::asio::ip::tcp::socket							mSocket;
+	boost::asio::ip::tcp::resolver::iterator				mEndPoint;
+	std::unique_ptr<Networking::Address>					mFrom;
 	std::unique_ptr<Networking::AddressTcp>				mTo;
-	static const std::size_t							mBufferReadSize = TCP_READER_BUFFER_SIZE;
+	static const std::size_t								mBufferReadSize = TCP_READER_BUFFER_SIZE;
 	uint8_t												mBufferRead[mBufferReadSize];
-	std::queue< std::unique_ptr<Networking::Buffer> >	mWriteQueue;
+	std::queue< std::unique_ptr<Networking::Buffer> >		mWriteQueue;
+	TcpNetProtocol::Type									mProtocol = TcpNetProtocol::UNSET;
+	uint32_t												mExpirationTsSec = 0;
 
 	void setState(State);
 	State getState() const {return mState;}

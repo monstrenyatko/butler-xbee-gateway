@@ -34,6 +34,7 @@ public:
 	virtual bool isEqual(const Address& v) const {return mOrigin==v.mOrigin;}
 	virtual std::unique_ptr<Address> clone() const = 0;
 	virtual std::string toString() const = 0;
+	virtual std::string getValueString() const = 0;
 protected:
 	Address(Origin::Type o): mOrigin(o) {}
 private:
@@ -57,6 +58,11 @@ public:
 	std::string toString() const {
 		std::stringstream ss;
 		ss << getOrigin() << "[" << mVal << "]";
+		return ss.str();
+	}
+	std::string getValueString() const {
+		std::stringstream ss;
+		ss << mVal;
 		return ss.str();
 	}
 private:

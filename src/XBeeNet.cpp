@@ -62,7 +62,7 @@ public:
 				if (getFrameSize() > 200) {
 					*mLog.warn() << UTILS_STR_FUNCTION << ", frame-length is huge";
 				}
-				mBuffer->reserve(getFrameSize());
+				mBuffer->reserve(static_cast<XBeeBuffer::size_type>(getFrameSize()));
 			}
 			// check length
 			if (mFrameLength && mBuffer->size() >= getFrameSize()) {

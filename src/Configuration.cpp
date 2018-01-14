@@ -18,6 +18,8 @@
 #include "Logger.h"
 /* External Includes */
 /* System Includes */
+#include <fstream>
+#include <streambuf>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -79,6 +81,22 @@ throw (Utils::Error)
 			get().serial.baud = config.get<uint32_t>("serial.baud");
 			get().tcp.address = config.get<std::string>("tcp.address");
 			get().tcp.port = config.get<uint32_t>("tcp.port");
+			get().mqtt.resetOnConnect = config.get<bool>("mqtt.reset-on-connect", get().mqtt.resetOnConnect);
+			get().mqtt.forceAuth = config.get<bool>("mqtt.force-auth", get().mqtt.forceAuth);
+			get().jwt.expirationSec = config.get<uint32_t>("jwt.expiration-sec", get().jwt.expirationSec);
+			get().jwt.key = config.get<std::string>("jwt.key", get().jwt.key);
+			get().jwt.keyFile = config.get<std::string>("jwt.key-file", get().jwt.keyFile);
+			if (!get().jwt.keyFile.empty()) {
+				std::ifstream file(get().jwt.keyFile);
+				if (!file.is_open()) {
+					throw Utils::Error("Can't open file, name: " + get().jwt.keyFile);
+				}
+				get().jwt.key.assign(
+					(std::istreambuf_iterator<char>(file)),
+					std::istreambuf_iterator<char>()
+				);
+				boost::trim(get().jwt.key);
+			}
 		} catch (const boost::property_tree::ptree_bad_data& e) {
 			throw Utils::Error(e, "bad-data [" + e.data<std::string>() + "]");
 		}
@@ -107,12 +125,17 @@ throw ()
 
 void Configuration::dump() const {
 	*ConfigurationImpl::mLog.info() << "Configuration:";
-	*ConfigurationImpl::mLog.info() << "logger.level = " << LoggerLevel::toString(logger.level);
-	*ConfigurationImpl::mLog.info() << "logger.file = " << logger.file;
-	*ConfigurationImpl::mLog.info() << "serial.name = " << serial.name;
-	*ConfigurationImpl::mLog.info() << "serial.boud = " << serial.baud;
-	*ConfigurationImpl::mLog.info() << "tcp.address = " << tcp.address;
-	*ConfigurationImpl::mLog.info() << "tcp.port    = " << tcp.port;
+	*ConfigurationImpl::mLog.info() << "logger.level             = " << LoggerLevel::toString(logger.level);
+	*ConfigurationImpl::mLog.info() << "logger.file              = " << logger.file;
+	*ConfigurationImpl::mLog.info() << "serial.name              = " << serial.name;
+	*ConfigurationImpl::mLog.info() << "serial.boud              = " << serial.baud;
+	*ConfigurationImpl::mLog.info() << "tcp.address              = " << tcp.address;
+	*ConfigurationImpl::mLog.info() << "tcp.port                 = " << tcp.port;
+	*ConfigurationImpl::mLog.info() << "mqtt.reset-on-connect    = " << putBool(mqtt.resetOnConnect);
+	*ConfigurationImpl::mLog.info() << "mqtt.force-auth          = " << putBool(mqtt.forceAuth);
+	*ConfigurationImpl::mLog.info() << "jwt.expiration-sec       = " << jwt.expirationSec;
+	*ConfigurationImpl::mLog.info() << "jwt.key                  = " << (jwt.key.empty()     ? "<NA>" : "<*>");
+	*ConfigurationImpl::mLog.info() << "jwt.keyFile              = " << (jwt.keyFile.empty() ? "<NA>" : jwt.keyFile);
 }
 
 } /* namespace Utils */

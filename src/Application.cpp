@@ -19,11 +19,12 @@
 #include "XBeeNet.h"
 #include "TcpNet.h"
 #include "Router.h"
+#include "Mqtt.h"
 /* External Includes */
 /* System Includes */
 
 
-Application* Application::mInstance = NULL;
+Application* Application::mInstance = nullptr;
 
 void Application::initialize()
 throw (Utils::Error)
@@ -40,10 +41,10 @@ throw (Utils::Error)
 	try {
 		delete mInstance;
 	} catch (Utils::Error& e) {
-		mInstance = NULL;
+		mInstance = nullptr;
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
 	} catch (std::exception& e) {
-		mInstance = NULL;
+		mInstance = nullptr;
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
 	}
 }
@@ -62,12 +63,13 @@ throw (Utils::Error)
 :
 	mLog(__FUNCTION__),
 	mSem(0, 1),
-	mProcessor(NULL),
-	mSignalProcessor(NULL),
-	mSerial(NULL),
-	mXBeeNet(NULL),
-	mTcpNet(NULL),
-	mRouter(NULL)
+	mProcessor(nullptr),
+	mSignalProcessor(nullptr),
+	mSerial(nullptr),
+	mXBeeNet(nullptr),
+	mTcpNet(nullptr),
+	mRouter(nullptr),
+	mMqtt(nullptr)
 {
 	std::unique_ptr<Utils::CommandProcessor> ptrProcessor;
 	std::unique_ptr<SignalProcessor> ptrSignalProcessor;
@@ -75,16 +77,18 @@ throw (Utils::Error)
 	std::unique_ptr<XBeeNet> ptrXBeeNet;
 	std::unique_ptr<TcpNet> ptrTcpNet;
 	std::unique_ptr<Router> ptrRouter;
+	std::unique_ptr<Mqtt> ptrMqtt;
 
 	// initialize objects in exception-save mode
 	try {
 		*mLog.info() << "INITIALIZATION";
 		ptrProcessor.reset(new Utils::CommandProcessor(mLog.getName()));
-		ptrSignalProcessor.reset(new SignalProcessor);
+		ptrSignalProcessor.reset(new SignalProcessor());
 		ptrSerial.reset(new SerialPort());
 		ptrXBeeNet.reset(new XBeeNet());
 		ptrTcpNet.reset(new TcpNet());
-		ptrRouter.reset(new Router);
+		ptrRouter.reset(new Router());
+		ptrMqtt.reset(new Mqtt());
 	} catch (std::exception& e) {
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Application));
 	}
@@ -96,6 +100,7 @@ throw (Utils::Error)
 	mXBeeNet = ptrXBeeNet.release();
 	mTcpNet = ptrTcpNet.release();
 	mRouter = ptrRouter.release();
+	mMqtt = ptrMqtt.release();
 }
 
 Application::~Application()
@@ -117,6 +122,7 @@ throw (Utils::Error)
 	// clean objects
 	*mLog.info() << "DESTROY";
 	try {
+		delete mMqtt;
 		delete mRouter;
 		delete mTcpNet;
 		delete mXBeeNet;

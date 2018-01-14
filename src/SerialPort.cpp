@@ -196,7 +196,7 @@ public:
 		*mLog.debug() << UTILS_STR_FUNCTION <<", size: " << data->size();
 		try {
 			try {
-				std::size_t qty = boost::asio::write(mPort, boost::asio::buffer(&((*data)[0]), data->size()));
+				std::size_t qty = boost::asio::write(mPort, boost::asio::buffer(&((*data)[0]), static_cast<std::size_t>(data->size())));
 				*mLog.debug() << UTILS_STR_FUNCTION << ", written : " << qty;
 				// TODO: process write`s return value
 			} catch (boost::system::system_error& e) {

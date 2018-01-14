@@ -195,6 +195,31 @@ inline __iom__put_byte putByte(uint8_t data) {
 };
 
 /**
+ * Print bool as 'true' or 'false' (helper class)
+ */
+class __iom__put_bool {
+public:
+	inline explicit __iom__put_bool(bool data)
+		: mData(data) {}
+
+	inline friend std::ostream& operator<<(std::ostream& os, const __iom__put_bool& data)
+	{
+		// print
+		os << (data.mData ? "true" : "false");
+		return os;
+	}
+private:
+	const bool		mData;
+};
+
+/**
+ * Print bool as 'true' or 'false'
+ */
+inline __iom__put_bool putBool(bool data) {
+	return __iom__put_bool(data);
+};
+
+/**
  * Overload operator '<<' for custom manipulators.
  * If the 'os' is not an instance of 'LogStream' Do nothing.
  */

@@ -154,7 +154,7 @@ throw (Utils::Error)
 	try {
 		try {
 			mSocket.async_write_some(
-				boost::asio::buffer(mWriteQueue.front()->data()+shift, mWriteQueue.front()->size()-shift),
+				boost::asio::buffer(mWriteQueue.front()->data()+shift, static_cast<std::size_t>(mWriteQueue.front()->size()-shift)),
 				[this](const boost::system::error_code& a, std::size_t b) {
 					onWrite(a, b);
 				}

@@ -30,6 +30,7 @@ class SignalProcessor;
 class XBeeNet;
 class TcpNet;
 class Router;
+class Mqtt;
 
 
 class Application {
@@ -65,23 +66,25 @@ public:
 	void stop(const std::string& reason) throw ();
 
 	// Available services
-	Utils::CommandProcessor&	getProcessor() {return *mProcessor;}
+	Utils::CommandProcessor&		getProcessor() {return *mProcessor;}
 	SerialPort&					getSerial() {return *mSerial;}
-	XBeeNet&					getXBeeNet() {return *mXBeeNet;}
+	XBeeNet&						getXBeeNet() {return *mXBeeNet;}
 	TcpNet&						getTcpNet() {return *mTcpNet;}
 	Router&						getRouter() {return *mRouter;}
+	Mqtt&						getMqtt() {return *mMqtt;}
 private:
 	// Objects
 	static Application*				mInstance;
 	Utils::Logger					mLog;
-	Utils::Semaphore				mSem;
+	Utils::Semaphore					mSem;
 	// Services
-	Utils::CommandProcessor*		mProcessor;
-	SignalProcessor*				mSignalProcessor;
+	Utils::CommandProcessor*			mProcessor;
+	SignalProcessor*					mSignalProcessor;
 	SerialPort*						mSerial;
-	XBeeNet*						mXBeeNet;
+	XBeeNet*							mXBeeNet;
 	TcpNet*							mTcpNet;
 	Router*							mRouter;
+	Mqtt*							mMqtt;
 
 	// Do not copy
 	Application(const Application&);

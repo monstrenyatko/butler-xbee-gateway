@@ -49,7 +49,7 @@ private:
 
 	static Configuration*			mInstance;
 	static std::mutex				mMtxInstance;
-	static Utils::Logger			mLog;
+	static Utils::Logger				mLog;
 
 	// static class
 	ConfigurationImpl();

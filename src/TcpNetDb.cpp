@@ -43,7 +43,7 @@ TcpNetConnection* TcpNetDb::get(const Networking::Address& from, const Networkin
 			return i;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 void TcpNetDb::put(std::unique_ptr<TcpNetConnection> connection) {
