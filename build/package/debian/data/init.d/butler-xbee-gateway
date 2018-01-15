@@ -1,0 +1,118 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          butler-xbee-gateway
+# Required-Start:    $remote_fs $syslog $network $named
+# Required-Stop:     $remote_fs $syslog $network $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+### END INIT INFO
+
+# Exit immediately if a simple command exits with a non-zero status
+set -e
+
+NAME=butler-xbee-gateway
+PIDFILE=/var/run/${NAME}.pid
+DAEMON=/usr/sbin/${NAME}
+DAEMON_PARAMS="-c /etc/${NAME}/config.json"
+DAEMON_START_PARAMS="--start --quiet --oknodo --background  --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} -- ${DAEMON_PARAMS}"
+DAEMON_STOP_PARAMS_STRICT="--stop --quiet --retry 30 --pidfile ${PIDFILE}"
+DAEMON_STOP_PARAMS="${DAEMON_STOP_PARAMS_STRICT} --oknodo"
+DAEMON_ROTATE_PARAMS="--stop --quiet --signal HUP --pidfile $PIDFILE --exec $DAEMON"
+
+test -x ${DAEMON} || exit 0
+
+# File creation mask: affects files created by this script
+umask 022
+
+# Define LSB log_* functions.
+. /lib/lsb/init-functions
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+
+case "$1" in
+  start)
+	log_daemon_msg "Starting ${NAME}" "${NAME}"
+	if start-stop-daemon ${DAEMON_START_PARAMS}
+	then
+		log_end_msg 0
+	else
+		log_end_msg 1
+	fi
+	;;
+
+  stop)
+	log_daemon_msg "Stopping ${NAME}" "${NAME}"
+	if start-stop-daemon ${DAEMON_STOP_PARAMS}
+	then
+		log_end_msg 0
+		rm -f ${PIDFILE}
+	else
+		log_end_msg 1
+	fi
+	;;
+
+  restart)
+	log_daemon_msg "Restarting ${NAME}" "${NAME}"
+	if start-stop-daemon ${DAEMON_STOP_PARAMS}
+	then
+		rm -f ${PIDFILE}
+	fi
+	if start-stop-daemon ${DAEMON_START_PARAMS}
+	then
+		log_end_msg 0
+	else
+		log_end_msg 1
+	fi
+	;;
+
+  try-restart)
+	log_daemon_msg "Try-Restarting ${NAME}" "${NAME}"
+	set +e
+	start-stop-daemon ${DAEMON_STOP_PARAMS_STRICT}
+	RET="$?"
+	set -e
+	case $RET in
+	  0)
+		# old daemon stopped
+		rm -f ${PIDFILE}
+		if start-stop-daemon ${DAEMON_START_PARAMS}
+		then
+			log_end_msg 0
+		else
+			log_end_msg 1
+		fi
+		;;
+	  1)
+		# daemon not running
+		log_progress_msg "(not running)"
+		log_end_msg 0
+		;;
+	  *)
+		# failed to stop
+		log_progress_msg "(failed to stop)"
+		log_end_msg 1
+		;;
+	esac
+	;;
+
+  rotate)
+		log_daemon_msg "Rotating logs for ${NAME}" "${NAME}"
+		if start-stop-daemon ${DAEMON_ROTATE_PARAMS}
+		then
+			log_end_msg 0
+		else
+			log_end_msg 1
+		fi
+		;;
+
+  status)
+	status_of_proc -p ${PIDFILE} ${DAEMON} ${NAME} && exit 0 || exit $?
+	;;
+
+  *)
+	log_action_msg "Usage: /etc/init.d/${NAME} {start|stop|restart|try-restart|rotate|status}"
+	exit 1
+esac
+
+exit 0

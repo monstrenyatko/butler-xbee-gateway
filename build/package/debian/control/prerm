@@ -1,0 +1,24 @@
+#!/bin/sh
+# prerm script
+
+set -e
+
+NAME=butler-xbee-gateway
+
+case "$1" in
+	remove|purge|deconfigure|upgrade)
+		if [ -x "/etc/init.d/${NAME}" ]; then
+			invoke-rc.d ${NAME} stop || exit $?
+		fi
+	;;
+
+	failed-upgrade)
+	;;
+
+	*)
+		echo "prerm called with unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+exit 0

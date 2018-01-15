@@ -1,0 +1,13 @@
+compress
+delaycompress
+nocreate
+notifempty
+missingok
+dateext
+/var/log/butler-xbee-gateway.log {
+	rotate 7
+	daily
+	postrotate
+		invoke-rc.d butler-xbee-gateway rotate > /dev/null
+	endscript
+}
