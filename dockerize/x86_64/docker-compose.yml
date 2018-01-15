@@ -1,0 +1,8 @@
+version: '2'
+services:
+  butler-xbee-gateway:
+    image: monstrenyatko/butler-xbee-gateway
+    container_name: butler-xbee-gateway
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0:rw"
+    restart: unless-stopped
