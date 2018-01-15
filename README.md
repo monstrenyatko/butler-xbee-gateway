@@ -108,7 +108,7 @@ Raspberry Pi (cross compilation using Docker)
 ---------------------------------------------
 - Pull pre built `Docker` image of the [cross compiler](https://github.com/monstrenyatko/docker-rpi-cross-compiler) :
 ```sh
-docker pull monstrenyatko/docker-rpi-cross-compiler
+docker pull monstrenyatko/rpi-cross-compiler
 ```
 - Create a `build directory` for out of source compilation:
 ```sh

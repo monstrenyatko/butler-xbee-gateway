@@ -26,7 +26,7 @@ if [ -z "$SRC_PATH" ]; then
     exit 1;
 fi
 
-export RPXC_IMAGE=monstrenyatko/docker-rpi-cross-compiler
+export RPXC_IMAGE=monstrenyatko/rpi-cross-compiler
 export RPXC_ARGS="-v $SRC_PATH:/source"
 
 docker run --rm $RPXC_IMAGE > ./rpxc
