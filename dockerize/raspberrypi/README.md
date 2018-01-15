@@ -1,40 +1,38 @@
-# HOW TO DOCKER
+HOW TO DOCKER
+=============
 
-## About
+About
+=====
 
 Run using [Docker](https://www.docker.com).
 
-## Build the container
+Build the image
+===============
 
-* Place the `deb` package to install directory
 * Execute build script:
 ```sh
-	./build.sh
+	./build.sh monstrenyatko/rpi-butler-xbee-gateway
 ```
 
-## Run
+Run the container
+=================
 
-* Create `Configuration` storage:
-```sh
-	BUTLER_XBEE_GW_CFG="butler-xbee-gateway-config"
-	docker volume create --name $BUTLER_XBEE_GW_CFG
-```
-* Copy `Configuration` to the storage:
-```sh
-	docker run -v $BUTLER_XBEE_GW_CFG:/mnt --rm -v $(pwd):/src hypriot/armhf-busybox \
-		cp /src/config.json /mnt/config.json
-```
-* Edit `Configuration` (OPTIONAL):
-```sh
-	docker run -v $BUTLER_XBEE_GW_CFG:/mnt --rm -it hypriot/armhf-busybox \
-		vi /mnt/config.json
-```
 * Start prebuilt image:
-```sh
-	docker-compose up -d --no-build
-```
+
+  ```sh
+    docker-compose up -d
+  ```
 * Stop/Restart:
-```sh
-	docker stop butler-xbee-gateway
-	docker start butler-xbee-gateway
-```
+
+  ```sh
+    docker-compose stop
+    docker-compose start
+  ```
+* [**OPTIONAL**] Override the main configuration file:
+
+  ```yaml
+    butler-xbee-gateway:
+      ...
+      volumes:
+        - ./config.json:/etc/butler-xbee-gateway/config.json:ro
+  ```
