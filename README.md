@@ -10,7 +10,7 @@ About
 In default configuration/example:
 - Gateway assumes that sensor uses [MQTT](http://mqtt.org) protocol over `XBee® ZigBee`.
 - `MQTT` traffic is routed to `TCP` socket of the configured `MQTT Broker`.
-- `Arduino` board is used as sensor (See https://github.com/monstrenyatko/butler-arduino-sensor)
+- `Arduino` board is used as sensor (See [example](https://github.com/monstrenyatko/butler-arduino-library/tree/master/examples/AvrSensorMqttXbeeDhtLpm))
 
 Purpose
 =======
@@ -63,6 +63,14 @@ Install the compiler with `C++11` support.
 Boost
 -----
 Install [Boost](http://www.boost.org) libraries with version `1.45` or later.
+
+OpenSSL
+-------
+Install [OpenSSL](https://www.openssl.org/) development libraries.
+
+Jansson
+-------
+Install [Jansson](https://github.com/akheron/jansson) development libraries.
 
 Building
 ========
@@ -158,23 +166,23 @@ Set verbose level.
 		<td><b>Description</b></td>
 	</tr>
 	<tr>
-		<td>"ERROR"</td>
+		<td>ERROR</td>
 		<td>Prints only errors</td>
 	</tr>
 	<tr>
-		<td>"WARN"</td>
+		<td>WARN</td>
 		<td>ERROR level + warnings</td>
 	</tr>
 	<tr>
-		<td>"INFO"</td>
+		<td>INFO</td>
 		<td>WARN level + processing information</td>
 	</tr>
 	<tr>
-		<td>"DEBUG"</td>
+		<td>DEBUG</td>
 		<td>INFO level + debug information</td>
 	</tr>
 	<tr>
-		<td>"TRACE"</td>
+		<td>TRACE</td>
 		<td>DEBUG level + messages content</td>
 	</tr>
 </table>
@@ -203,3 +211,54 @@ TCP
 Server address like `"test.mosquitto.org"`
 ###### port (Number)
 Server port like `1883`
+
+MQTT
+----
+`MQTT` protocol settings.
+##### Block name
+`mqtt`
+##### Parameters:
+###### reset-on-connect (Boolean) [Default: `true`]
+Resets `TCP` connection when `CONNECT` message is detected.
+Significantly improves establishing of the `MQTT` connection when a client is not able to control `TCP` connection.
+###### force-auth (Boolean) [Default: `false`]
+When a `MQTT` client is not able to perform authentication by its own, this option allows injecting of the [JWT](https://jwt.io)
+authentication token to the `CONNECT` message. The token is injected as `user-name` in the `CONNECT` message.
+The behavior is compatible with [mosquitto-auth-plug](https://github.com/jpmens/mosquitto-auth-plug).
+The `JWT` token contains following claims:
+<table>
+	<tr>
+		<td><b>Claim</b></td>
+		<td><b>Type</b></td>
+		<td><b>Description</b></td>
+	</tr>
+	<tr>
+		<td>user</td>
+		<td>String</td>
+		<td>The client <b>XBee MAC</b> address in HEX format</td>
+	</tr>
+	<tr>
+		<td>exp</td>
+		<td>Number</td>
+		<td>Expiration time on or after which the token <b>must not</b> be accepted (See RFC 7519)
+		in the Epoch or Unix time-stamp format 
+		</td>
+	</tr>
+</table>
+
+Additionally, the `TCP` connection will be reset on `JWT` expiration to force client to re-send
+the `CONNECT` message and trigger the generation of the fresh `JWT`.
+Recommended to enable `XBee® ZigBee` protocol level encryption to avoid malicious devices.
+
+JWT
+----
+`JWT` generation settings.
+##### Block name
+`jwt`
+##### Parameters:
+###### expiration-sec (Number) [Default: `86400`]
+Number of seconds after which the token **must not** be accepted.
+###### key (String)
+The `secret key` value used to sign the token.
+###### key-file (String)
+The path to file with `secret key` value. Retrieved value overrides the `key` option value when provided. 
