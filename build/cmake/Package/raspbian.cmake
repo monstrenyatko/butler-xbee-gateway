@@ -2,6 +2,11 @@
 # load common parameters
 include(Package/linux-deb-common)
 
+# check
+if (NOT CMAKE_SIZEOF_VOID_P MATCHES 4) 
+	MESSAGE(FATAL_ERROR "Only 32-bit packaging supported")
+endif()
+
 # configure path
 set(PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/build/package/raspbian")
 

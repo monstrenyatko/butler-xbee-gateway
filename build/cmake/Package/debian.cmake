@@ -2,11 +2,18 @@
 # load common parameters
 include(Package/linux-deb-common)
 
+# check
+if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8) 
+	MESSAGE(FATAL_ERROR "Only 64-bit packaging supported")
+endif()
+
 # configure path
 set(PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/build/package/debian")
 
 # set parameters
 set(CPACK_STRIP_FILES ${PROJECT_NAME})
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_SYSTEM_NAME "linux-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
 	"${PACKAGE_SOURCE_DIR}/control/conffiles"
 	"${PACKAGE_SOURCE_DIR}/control/postinst"
