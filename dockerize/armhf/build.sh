@@ -1,9 +1,10 @@
 #!/bin/bash
 
+exiterr() { echo "Error: ${1}" >&2; exit 1; }
+
 # Gather parameters
 if [ $# -eq 0 ];then
-	(>&2 echo "No argument supplied")
-    exit 1
+	exiterr "No argument supplied"
 fi
 build_tag=$1
 
