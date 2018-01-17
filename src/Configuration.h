@@ -44,6 +44,11 @@ public:
 	static void load() throw (Utils::Error);
 
 	/**
+	 * Read configuration from environment
+	 */
+	static void loadEnv() throw (Utils::Error);
+
+	/**
 	 * Log the current configuration
 	 */
 	void dump() const;

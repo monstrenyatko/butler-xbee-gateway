@@ -43,6 +43,11 @@ private:
 	static void load() throw (Utils::Error);
 
 	/**
+	 * Read configuration from environment
+	 */
+	static void loadEnv() throw (Utils::Error);
+
+	/**
 	 * Destroy the instance of the 'Configuration' If available
 	 */
 	static void destroy() throw ();

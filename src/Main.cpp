@@ -29,6 +29,7 @@ int main(int argc, char* argv[]) {
 		*log.info() << "Version: " << Version::value;
 		Utils::Options::get().process(argc, argv);
 		Utils::Configuration::get().load();
+		Utils::Configuration::get().loadEnv();
 		Utils::Configuration::get().dump();
 		Utils::LogManager::get().start();
 		Application::initialize();

@@ -18,6 +18,8 @@
 #include "Logger.h"
 /* External Includes */
 /* System Includes */
+#include <cstdlib>
+#include <string.h>
 #include <fstream>
 #include <streambuf>
 #include <boost/property_tree/json_parser.hpp>
@@ -25,7 +27,7 @@
 
 namespace Utils {
 
-Configuration*			ConfigurationImpl::mInstance = NULL;
+Configuration*			ConfigurationImpl::mInstance = nullptr;
 std::mutex				ConfigurationImpl::mMtxInstance;
 Utils::Logger			ConfigurationImpl::mLog("Configuration");
 
@@ -51,7 +53,7 @@ throw ()
 		if (mInstance)
 		{
 			Configuration* tmp = mInstance;
-			mInstance = NULL;
+			mInstance = nullptr;
 			delete tmp;
 		}
 	} catch (std::exception& e) {
@@ -88,17 +90,33 @@ throw (Utils::Error)
 			get().jwt.keyFile = config.get<std::string>("jwt.key-file", get().jwt.keyFile);
 			if (!get().jwt.keyFile.empty()) {
 				std::ifstream file(get().jwt.keyFile);
-				if (!file.is_open()) {
-					throw Utils::Error("Can't open file, name: " + get().jwt.keyFile);
+				if (file.is_open()) {
+					get().jwt.key.assign(
+						(std::istreambuf_iterator<char>(file)),
+						std::istreambuf_iterator<char>()
+					);
+					boost::trim(get().jwt.key);
+				} else {
+					*mLog.warn() << "Can't open file, name: " << get().jwt.keyFile;
 				}
-				get().jwt.key.assign(
-					(std::istreambuf_iterator<char>(file)),
-					std::istreambuf_iterator<char>()
-				);
-				boost::trim(get().jwt.key);
 			}
 		} catch (const boost::property_tree::ptree_bad_data& e) {
 			throw Utils::Error(e, "bad-data [" + e.data<std::string>() + "]");
+		}
+	} catch (std::exception& e) {
+		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Configuration));
+	}
+}
+
+void ConfigurationImpl::loadEnv()
+throw (Utils::Error)
+{
+	try {
+		*ConfigurationImpl::mLog.info() << "Loading from environment";
+		// process environment variables
+		const char* env_jwt_key = std::getenv("BUTLER_XBEE_GW_JWT_KEY");
+		if (env_jwt_key && strlen(env_jwt_key) > 0) {
+			get().jwt.key.assign(env_jwt_key);
 		}
 	} catch (std::exception& e) {
 		throw Utils::Error(e, UTILS_STR_CLASS_FUNCTION(Configuration));
@@ -115,6 +133,12 @@ void Configuration::load()
 throw (Utils::Error)
 {
 	return ConfigurationImpl::load();
+}
+
+void Configuration::loadEnv()
+throw (Utils::Error)
+{
+	return ConfigurationImpl::loadEnv();
 }
 
 void Configuration::destroy()
