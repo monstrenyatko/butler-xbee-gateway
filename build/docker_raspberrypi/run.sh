@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Executed inside Docker container
-
 exiterr() { echo "Error: ${1}" >&2; exit 1; }
 
 set -e

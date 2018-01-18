@@ -24,7 +24,7 @@ function abs_path {
 
 SRC_PATH=$(abs_path $1)
 if [ -z "$SRC_PATH" ]; then
-	exiterr "$1 does not exist!"
+    exiterr "$1 does not exist!"
 fi
 
 export DOCKER_IMAGE=debian:jessie

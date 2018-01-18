@@ -27,10 +27,16 @@ if [ -z "$SRC_PATH" ]; then
     exiterr "$1 does not exist!"
 fi
 
-export RPXC_IMAGE=monstrenyatko/rpi-cross-compiler
-export RPXC_ARGS="-v $SRC_PATH:/source"
+export DOCKER_IMAGE=monstrenyatko/rpi-cross-compiler:no_rpxc
 
-docker run --rm $RPXC_IMAGE > ./rpxc
-chmod +x ./rpxc
+# If we are not running via boot2docker provide the current user UID and GID
+if [ -z $DOCKER_HOST ]; then
+    BUILD_USER_IDS_ENV="-e BUILD_USER_UID=$( id -u ) -e BUILD_USER_GID=$( id -g )"
+fi
 
-./rpxc -- /source/build/docker_raspberrypi/run.sh
+docker run --rm -it \
+    $BUILD_USER_IDS_ENV \
+    -v $PWD:/build \
+    -v $SRC_PATH:/source \
+    -w="/build" \
+    $DOCKER_IMAGE /source/build/docker_raspberrypi/no_rpxc/run.sh
