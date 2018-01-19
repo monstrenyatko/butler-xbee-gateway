@@ -24,7 +24,7 @@ popd
 
 mkdir -p tmp-image-build
 pushd tmp-image-build
-$DOCKER_SRC_DIR/../../build/docker_raspberrypi/build.sh $DOCKER_SRC_DIR/../../
+$DOCKER_SRC_DIR/../../build/docker_raspberrypi/no_rpxc/build.sh $DOCKER_SRC_DIR/../../
 mv -v *.deb $DOCKER_SRC_DIR/tmp
 popd
 
