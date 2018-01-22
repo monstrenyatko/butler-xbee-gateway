@@ -1,0 +1,49 @@
+sudo: required
+services:
+  - docker
+language: bash
+env:
+  global:
+    - COMMIT=${TRAVIS_COMMIT::8}
+    - DEPLOY="false"
+  matrix:
+    - CI_TARGET=DEB_DEBIAN DEPLOY="true"
+    - CI_TARGET=DEB_RPI
+    - CI_TARGET=DEB_RPI_NO_RPXC DEPLOY="true"
+    - CI_TARGET=DOCKER_X86_64 REPO=monstrenyatko/butler-xbee-gateway DEPLOY_IMAGE="true"
+    - CI_TARGET=DOCKER_ARMHF REPO=monstrenyatko/rpi-butler-xbee-gateway DEPLOY_IMAGE="true"
+script:
+  # prepare qemu
+  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+  # build
+  - ./build/ci/build.sh $CI_TARGET "$REPO:$COMMIT"
+  # get release name
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  # tag and push
+  - >
+    if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$DEPLOY_IMAGE" == "true" ]; then
+      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+      docker tag $REPO:$COMMIT $REPO:$TRAVIS_BUILD_NUMBER
+      docker tag $REPO:$COMMIT $REPO:$TAG
+      if [ "$TRAVIS_BRANCH" == "master" ]; then
+        docker push $REPO:$COMMIT
+        docker push $REPO:$TRAVIS_BUILD_NUMBER
+      fi
+      docker push $REPO:$TAG
+    fi
+deploy:
+  provider: releases
+  file_glob: true
+  file: .ci-build/$CI_TARGET/butler-xbee-gateway-*.deb
+  skip_cleanup: true
+  api_key:
+    secure: f6+myP/xDdSZwUKMmmO3XTRFL2oRr4O6g1eD4z4cK1cCR0aMJyD7s3S84T3vHnPz6wx41DRS+DF3AOVU7KTh0g4Qw8+LUWSK5LFKwRO0VCTLtI/xs8wEnrF30DMr/wWiPhdunIX4kUrT6Zol4XcGbB++Yl30QUHjG8vzDd+ifSwecBfh/hzrW7JuznGypTKrLwNX93tTJiiqEQd7nteQ7mtmYKu+Gupjf86LFXUVbjq/lQrc2v6qJ/qYWrYjrDlsaaUeR61kmZvWwOf7oHPSivcbRboNgvqvbXq9qDOEwesf37G3LpTmU2CjNSqmd/z8q1HTXs9UHv/CEN8/Jf78l4wNJbJj+YoeqAwohWIK17+uAMwfsO+vjAmi6RseIANG8rqz77gembrTOQ8Kfshmh3CVXO0qAN2T5qBE5hg5XcvbacmZvfSuOLYmxvzlBwLKDXBhc/P0fk4NqRbvh/DLslJEMdyYlrKTFmEALg6XOFCwA2gYqU8nR2XT4I6AHZA+eobfHk4pRbohNDEi3iEbkZYtTP/jgelbg1M868cqzBhY/+TrPcLHWLzXNWmFB/yp/xwX/uUt+s+JZBV5cHpGGilMi9S5tZOei4r7EtXkeZl90ECiB9+xZdIoIEEYuJHYj8ynvXWqjt07z7Nk2o9XNgEOsXzzWnuVufF+Eld/dM4=
+  on:
+    repo: monstrenyatko/butler-xbee-gateway
+    tags: true
+    all_branches: true
+    condition: $DEPLOY = "true"
+notifications:
+  email:
+    on_success: change
+    on_failure: always
