@@ -1,6 +1,8 @@
 BUTLER-XBEE-GATEWAY
 ===================
 
+[![Build Status](https://travis-ci.org/monstrenyatko/butler-xbee-gateway.svg?branch=master)](https://travis-ci.org/monstrenyatko/butler-xbee-gateway)
+
 About
 =====
 - It is a gateway between `XBee® ZigBee` and `TCP` network for `BUTLER` smart house framework.
@@ -23,9 +25,14 @@ Unfortunately on other side you get `Serial` as well in case of `XBee® ZigBee`.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <b>`Arduino` --> `Serial` --> `RF` <---z---> `RF` --> `Serial` --> `xbee-gateway` --> `TCP` --> `MQTT Broker`</b>
 
+Docker images
+=============
+- [x86_64](https://hub.docker.com/r/monstrenyatko/butler-xbee-gateway/)
+- [armhf](https://hub.docker.com/r/monstrenyatko/rpi-butler-xbee-gateway/)
+
 Usage
 =====
-- Connect `XBee® ZigBee Coordinator` to PC where the application is installed.
+- Connect `XBee® ZigBee Coordinator` to PC/RPi/etc where the application is installed.
 - Launch the application.
 - Do not forget to power ON all nodes with `XBee® ZigBee` wireless interfaces.
 
@@ -54,7 +61,7 @@ Prepare build environment
 
 Cmake
 -----
-Install [Cmake](http://www.cmake.org) with version `2.8` or later.
+Install [Cmake](http://www.cmake.org) with version `3.0.2` or later.
 
 C++
 ---
@@ -71,6 +78,14 @@ Install [OpenSSL](https://www.openssl.org/) development libraries.
 Jansson
 -------
 Install [Jansson](https://github.com/akheron/jansson) development libraries.
+
+Getting sources
+===============
+
+Download source code including submodules:
+```sh
+git clone <repository url> --recursive
+```
 
 Building
 ========
