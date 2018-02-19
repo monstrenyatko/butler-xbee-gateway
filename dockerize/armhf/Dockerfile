@@ -1,4 +1,4 @@
-FROM arm32v7/debian:jessie
+FROM raspbian/jessie
 
 MAINTAINER Oleg Kovalenko <monstrenyatko@gmail.com>
 
@@ -36,7 +36,8 @@ RUN apt-get update \
 
 ENV APP_USERNAME="butler-xbee-gateway"
 RUN addgroup --system $APP_USERNAME \
-    && adduser --system --no-create-home --ingroup $APP_USERNAME $APP_USERNAME
+    && adduser --system --no-create-home --ingroup $APP_USERNAME $APP_USERNAME \
+    && usermod -a -G dialout $APP_USERNAME
 
 COPY run.sh /
 RUN chmod +x /run.sh
